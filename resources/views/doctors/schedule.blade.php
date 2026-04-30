@@ -96,6 +96,59 @@
 
   <div class="card border-0 shadow-sm mt-3">
     <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h6 class="fw-semibold mb-1">Weekly Availability</h6>
+          <p class="text-muted small mb-0">Manage the slots patients can book from the public doctor profile.</p>
+        </div>
+        <span class="badge bg-light text-dark border">30 minute slots</span>
+      </div>
+
+      <form method="POST" action="{{ route('doctors.weekly-schedule.update', $doctor) }}">
+        @csrf
+        <div class="row g-3">
+          @foreach (['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as $dayIndex => $dayName)
+            @php
+              $daySlots = $weeklySchedules->get($dayIndex, collect());
+              if ($daySlots->isEmpty()) {
+                  $daySlots = collect(range(0, 2))->map(fn () => null);
+              }
+            @endphp
+            <div class="col-lg-6">
+              <div class="border rounded-3 p-3 h-100">
+                <p class="fw-semibold mb-3">{{ $dayName }}</p>
+                <div class="d-grid gap-2">
+                  @foreach ($daySlots->take(5)->values() as $slotIndex => $slot)
+                    <div class="row g-2 align-items-center">
+                      <div class="col-5">
+                        <input type="time" name="slots[{{ $dayIndex }}][{{ $slotIndex }}][start_time]" class="form-control form-control-sm" value="{{ $slot ? \Carbon\Carbon::parse($slot->start_time)->format('H:i') : '' }}">
+                      </div>
+                      <div class="col-5">
+                        <input type="time" name="slots[{{ $dayIndex }}][{{ $slotIndex }}][end_time]" class="form-control form-control-sm" value="{{ $slot ? \Carbon\Carbon::parse($slot->end_time)->format('H:i') : '' }}">
+                      </div>
+                      <div class="col-2 text-end">
+                        <input type="hidden" name="slots[{{ $dayIndex }}][{{ $slotIndex }}][is_available]" value="0">
+                        <input class="form-check-input" type="checkbox" name="slots[{{ $dayIndex }}][{{ $slotIndex }}][is_available]" value="1" @checked($slot?->is_available ?? false) aria-label="{{ $dayName }} slot available">
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              </div>
+            </div>
+          @endforeach
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <button type="submit" class="btn btn-dark btn-sm">
+            <i class="fas fa-save me-1"></i> Save Weekly Schedule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-semibold mb-0">Scheduled Events This Month</h6>
         <span class="text-muted small">{{ $appointmentsByDate->flatten(1)->count() }} appointments</span>

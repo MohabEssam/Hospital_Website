@@ -7,14 +7,29 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\PatientController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Website\BookingController;
+use App\Http\Controllers\Website\HomeController;
+use App\Http\Controllers\Website\WebDepartmentController;
+use App\Http\Controllers\Website\WebDoctorController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return Auth::check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login');
-})->name('home');
+/*
+|--------------------------------------------------------------------------
+| Public Website Routes — Medicare Hospital
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', HomeController::class)->name('home');
+Route::get('/departments', [WebDepartmentController::class, 'index'])->name('website.departments');
+Route::get('/departments/{department}', [WebDepartmentController::class, 'show'])->name('website.departments.show');
+Route::get('/doctors', [WebDoctorController::class, 'index'])->name('website.doctors');
+Route::get('/doctors/{doctor}', [WebDoctorController::class, 'show'])->name('website.doctors.show');
+
+/*
+|--------------------------------------------------------------------------
+| Guest-only Routes (login / register)
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -28,26 +43,47 @@ Route::middleware('guest')->group(function (): void {
         ->name('register.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // --- Patient: booking via website ---
+    Route::middleware('role:patient')->group(function (): void {
+        Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
+        Route::get('/book', [BookingController::class, 'create'])->name('website.book');
+        Route::post('/book', [BookingController::class, 'store'])->name('website.book.store');
+        Route::post('/doctors/{doctor}/appointments', [WebDoctorController::class, 'bookAppointment'])
+            ->name('website.doctors.appointments.store');
+    });
 
-    Route::resource('appointments', AppointmentController::class);
+    // --- Dashboard routes (admin & doctor only) ---
+    Route::middleware('role:admin,doctor')->prefix('dashboard')->group(function (): void {
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
-    Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+        Route::resource('appointments', AppointmentController::class);
 
-    Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
-    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
-    Route::get('/doctors/{doctor}/schedule', [DoctorController::class, 'schedule'])->name('doctors.schedule');
+        Route::middleware('role:admin')->group(function (): void {
+            Route::resource('patients', PatientController::class)->except(['index', 'show']);
+            Route::resource('doctors', DoctorController::class)->except(['index', 'show']);
+            Route::resource('departments', DepartmentController::class)->except(['index', 'show']);
+        });
 
-    Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
-    Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
+        Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
+        Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
 
-    Route::middleware('role:admin')->group(function (): void {
-        Route::resource('patients', PatientController::class)->except(['index', 'show']);
-        Route::resource('doctors', DoctorController::class)->except(['index', 'show']);
-        Route::resource('departments', DepartmentController::class)->except(['index', 'show']);
+        Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
+        Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
+        Route::get('/doctors/{doctor}/schedule', [DoctorController::class, 'schedule'])->name('doctors.schedule');
+        Route::post('/doctors/{doctor}/weekly-schedule', [DoctorController::class, 'updateWeeklySchedule'])->name('doctors.weekly-schedule.update');
+
+        Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+        Route::get('/departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
+
+        Route::post('/availability', [DashboardController::class, 'updateAvailability'])->name('availability.update');
     });
 });

@@ -15,12 +15,16 @@
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('appointments.*') ? 'active' : '' }}" href="{{ route('appointments.index') }}"><span><i class="fas fa-calendar-check"></i></span><span class="hide-menu">Appointments</span></a></li>
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('patients.*') ? 'active' : '' }}" href="{{ route('patients.index') }}"><span><i class="fas fa-user-injured"></i></span><span class="hide-menu">Patients</span></a></li>
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.index', 'doctors.show', 'doctors.create', 'doctors.edit') ? 'active' : '' }}" href="{{ route('doctors.index') }}"><span><i class="fas fa-user-md"></i></span><span class="hide-menu">Doctors</span></a></li>
+@if(auth()->user()?->isAdmin())
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}"><span><i class="fas fa-building"></i></span><span class="hide-menu">Departments</span></a></li>
+@endif
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.schedule') ? 'active' : '' }}" href="{{ auth()->user()->doctorProfile ? route('doctors.schedule', auth()->user()->doctorProfile) : route('doctors.index') }}"><span><i class="fas fa-calendar-day"></i></span><span class="hide-menu">Doctors' Schedule</span></a></li>
 
+@if(auth()->user()?->isAdmin())
 <li class="nav-small-cap"><i class="ti ti-dots nav-small-cap-icon fs-4"></i><span class="hide-menu">AUTH</span></li>
 <li class="sidebar-item"><a class="sidebar-link" href="{{ route('login') }}"><span><i class="ti ti-login"></i></span><span class="hide-menu">Login</span></a></li>
 <li class="sidebar-item"><a class="sidebar-link" href="{{ route('register') }}"><span><i class="ti ti-user-plus"></i></span><span class="hide-menu">Register</span></a></li>
+@endif
 </ul>
 </nav>
 </div>

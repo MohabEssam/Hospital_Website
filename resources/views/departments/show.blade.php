@@ -17,7 +17,7 @@
       <p class="text-muted mb-4">{{ $department->description }}</p>
 
       <div class="mb-4">
-        <img src="{{ $department->hero_image_path ? asset($department->hero_image_path) : asset('assets/images/Department/cardiology-edit.jpg') }}" alt="{{ $department->name }}" class="dept-hero">
+        <img src="{{ $department->hero_image ? asset($department->hero_image) : asset('assets/images/Department/cardiology-edit.jpg') }}" alt="{{ $department->name }}" class="dept-hero">
       </div>
 
       <h6 class="fw-bold text-uppercase text-muted mb-3" style="letter-spacing:.05em;font-size:.75rem;">Services &amp; Treatments</h6>
@@ -70,7 +70,7 @@
         </ul>
 
         <div class="mb-3">
-          <img src="{{ $department->sidebar_image_path ? asset($department->sidebar_image_path) : asset('assets/images/Department/specialist-side-image.jpg') }}" alt="{{ $department->name }}" class="sidebar-banner">
+          <img src="{{ $department->sidebar_image ? asset($department->sidebar_image) : asset('assets/images/Department/specialist-side-image.jpg') }}" alt="{{ $department->name }}" class="sidebar-banner">
         </div>
 
         <div class="d-flex align-items-center gap-2 mb-2">

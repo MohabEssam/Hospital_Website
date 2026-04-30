@@ -13,7 +13,7 @@
 
   <div class="card border-0 shadow-sm">
     <div class="card-body">
-      <form action="{{ route('doctors.update', $doctor) }}" method="POST">
+      <form action="{{ route('doctors.update', $doctor) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         @include('doctors._form')
@@ -22,6 +22,12 @@
           <a href="{{ route('doctors.show', $doctor) }}" class="btn btn-outline-secondary">Cancel</a>
           <button type="submit" class="btn btn-dark">Update Doctor</button>
         </div>
+      </form>
+
+      <form action="{{ route('doctors.destroy', $doctor) }}" method="POST" class="mt-3">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this doctor?')">Delete Doctor</button>
       </form>
     </div>
   </div>

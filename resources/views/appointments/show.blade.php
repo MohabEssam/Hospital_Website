@@ -24,6 +24,10 @@
               <p class="text-muted small mb-1">Doctor</p>
               <p class="fw-semibold mb-0">{{ $appointment->doctor?->name }}</p>
             </div>
+            <div class="col-md-6">
+              <p class="text-muted small mb-1">Department</p>
+              <p class="fw-semibold mb-0">{{ $appointment->department?->name ?? '-' }}</p>
+            </div>
             <div class="col-md-4">
               <p class="text-muted small mb-1">Date</p>
               <p class="fw-semibold mb-0">{{ $appointment->appointment_date?->format('d M Y') }}</p>
@@ -68,6 +72,13 @@
             @endif
             @if ($appointment->patient)
               <a href="{{ route('patients.show', $appointment->patient) }}" class="btn btn-outline-secondary">View Patient</a>
+            @endif
+            @if(auth()->user()->isAdmin())
+            <form action="{{ route('appointments.destroy', $appointment) }}" method="POST">
+              @csrf
+              @method('DELETE')
+              <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Delete this appointment?')">Delete Appointment</button>
+            </form>
             @endif
           </div>
         </div>

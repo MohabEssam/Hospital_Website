@@ -17,6 +17,15 @@
       @endforeach
     </select>
   </div>
+  <div class="col-md-6">
+    <label class="form-label small fw-semibold">Department</label>
+    <select name="department_id" class="form-select">
+      <option value="">Auto from doctor</option>
+      @foreach ($departments as $departmentOption)
+        <option value="{{ $departmentOption->id }}" @selected(old('department_id', $appointment->department_id ?: request('department_id')) == $departmentOption->id)>{{ $departmentOption->name }}</option>
+      @endforeach
+    </select>
+  </div>
   <div class="col-md-4">
     <label class="form-label small fw-semibold">Date</label>
     <input type="date" name="appointment_date" class="form-control" value="{{ old('appointment_date', $appointment->appointment_date?->format('Y-m-d')) }}" required>

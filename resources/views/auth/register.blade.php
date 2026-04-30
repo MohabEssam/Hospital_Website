@@ -37,6 +37,23 @@
     </div>
 
     <div class="mb-3">
+      <label for="age" class="form-label">Age</label>
+      <input
+        type="number"
+        class="form-control @error('age') is-invalid @enderror"
+        id="age"
+        name="age"
+        value="{{ old('age') }}"
+        required
+        min="1"
+        max="120"
+        placeholder="Your age">
+      @error('age')
+        <div class="invalid-feedback">{{ $message }}</div>
+      @enderror
+    </div>
+
+    <div class="mb-3">
       <label for="password" class="form-label">Password</label>
       <input
         type="password"

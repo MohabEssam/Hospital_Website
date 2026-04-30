@@ -44,9 +44,23 @@
     <label class="form-label small fw-semibold">Years of Experience</label>
     <input type="number" min="0" max="70" name="years_of_experience" class="form-control" value="{{ old('years_of_experience', $doctor->years_of_experience) }}">
   </div>
+  <div class="col-md-4">
+    <label class="form-label small fw-semibold">Profile Rating</label>
+    <input type="number" min="0" max="5" step="0.1" name="rating" class="form-control" value="{{ old('rating', $doctor->rating ?: 4.8) }}">
+  </div>
   <div class="col-12">
-    <label class="form-label small fw-semibold">Avatar Path</label>
-    <input type="text" name="avatar_path" class="form-control" value="{{ old('avatar_path', $doctor->avatar_path) }}" placeholder="assets/images/profile/user-1.jpg">
+    <label class="form-label small fw-semibold">Avatar</label>
+    @if($doctor->avatar)
+      <div class="mb-2">
+        <img src="{{ asset('storage/' . $doctor->avatar) }}" alt="{{ $doctor->name }}" class="rounded-3 object-fit-cover" style="width:100px;height:100px;">
+        <small class="d-block text-muted mt-1">Current image</small>
+      </div>
+    @endif
+    <input type="file" name="avatar" class="form-control @error('avatar') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
+    @error('avatar')
+      <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+    <small class="text-muted">JPG, JPEG, or PNG. Max 2MB.</small>
   </div>
   <div class="col-12">
     <label class="form-label small fw-semibold">Biography</label>

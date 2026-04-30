@@ -193,6 +193,16 @@
                             <i class="fas fa-pen me-2 text-muted"></i>Edit
                           </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <form action="{{ route('patients.destroy', $patient) }}" method="POST" onsubmit="return confirm('Delete this patient?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="dropdown-item text-danger">
+                              <i class="fas fa-trash me-2"></i>Delete
+                            </button>
+                          </form>
+                        </li>
                       @endif
                     </ul>
                   </div>

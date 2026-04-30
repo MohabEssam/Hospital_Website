@@ -24,7 +24,7 @@
         @endphp
         <div class="col-4 col-md-4 dept-cell {{ $isLastInRow ? '' : 'border-end' }} {{ $isLastRow ? '' : 'border-bottom' }}">
           <a href="{{ route('departments.show', $department) }}">
-            <img src="{{ $department->icon_path ? asset($department->icon_path) : asset('assets/images/Department/card.png') }}" alt="{{ $department->name }}">
+            <img src="{{ $department->icon ? asset($department->icon) : asset('assets/images/Department/card.png') }}" alt="{{ $department->name }}">
             <p>{{ $department->name }}</p>
             <span class="text-muted small">{{ $department->doctors_count }} doctors</span>
           </a>

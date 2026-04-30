@@ -32,6 +32,7 @@
         <form method="GET" class="input-group input-group-sm" style="max-width:280px;">
           <input type="hidden" name="status" value="{{ $filters['status'] ?? '' }}">
           <input type="hidden" name="doctor_id" value="{{ $filters['doctor_id'] ?? '' }}">
+          <input type="hidden" name="department_id" value="{{ $filters['department_id'] ?? '' }}">
           <input type="hidden" name="appointment_date" value="{{ $filters['appointment_date'] ?? '' }}">
           <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
           <input type="text" class="form-control border-start-0 shadow-none" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search name, doctor, treatment...">
@@ -59,13 +60,23 @@
                 </div>
 
                 <div>
+                  <label class="form-label small fw-semibold mb-1">Department</label>
+                  <select name="department_id" class="form-select form-select-sm">
+                    <option value="">All Departments</option>
+                    @foreach ($departments as $department)
+                      <option value="{{ $department->id }}" @selected(($filters['department_id'] ?? '') == $department->id)>{{ $department->name }}</option>
+                    @endforeach
+                  </select>
+                </div>
+
+                <div>
                   <label class="form-label small fw-semibold mb-1">Date</label>
                   <input type="date" name="appointment_date" class="form-control form-control-sm" value="{{ $filters['appointment_date'] ?? '' }}">
                 </div>
 
                 <div class="d-flex gap-2 pt-1">
                   <button class="btn btn-dark btn-sm flex-grow-1">Apply</button>
-                  <a href="{{ route('appointments.index', array_merge(request()->except(['doctor_id', 'appointment_date', 'page']), ['doctor_id' => '', 'appointment_date' => ''])) }}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                  <a href="{{ route('appointments.index', array_merge(request()->except(['doctor_id', 'department_id', 'appointment_date', 'page']), ['doctor_id' => '', 'department_id' => '', 'appointment_date' => ''])) }}" class="btn btn-outline-secondary btn-sm flex-grow-1">
                     Reset
                   </a>
                 </div>
@@ -90,6 +101,7 @@
               <th class="text-muted fw-semibold small">Date</th>
               <th class="text-muted fw-semibold small">Time</th>
               <th class="text-muted fw-semibold small">Doctor</th>
+              <th class="text-muted fw-semibold small">Department</th>
               <th class="text-muted fw-semibold small">Treatment</th>
               <th class="text-muted fw-semibold small">Status</th>
               <th class="text-muted fw-semibold small">Action</th>
@@ -112,6 +124,7 @@
                 <td class="text-muted small">{{ $appointment->appointment_date?->format('Y-m-d') }}</td>
                 <td class="text-muted small">{{ $appointment->start_time }} - {{ $appointment->end_time }}</td>
                 <td class="small">{{ $appointment->doctor?->name }}</td>
+                <td class="small">{{ $appointment->department?->name ?? '-' }}</td>
                 <td class="small">{{ $appointment->treatment }}</td>
                 <td><span class="badge px-3 py-2" style="{{ $statusClasses[$appointment->status] ?? 'background:#e9ecef;color:#495057;' }}">{{ ucfirst($appointment->status) }}</span></td>
                 <td>
@@ -135,13 +148,25 @@
                           <i class="fas fa-user-md me-2 text-muted"></i>View Doctor
                         </a>
                       </li>
+                      @if(auth()->user()->isAdmin())
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <form action="{{ route('appointments.destroy', $appointment) }}" method="POST" onsubmit="return confirm('Delete this appointment?')">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="dropdown-item text-danger">
+                            <i class="fas fa-trash me-2"></i>Delete
+                          </button>
+                        </form>
+                      </li>
+                      @endif
                     </ul>
                   </div>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="8" class="text-center text-muted py-4 small">No appointments found.</td>
+                <td colspan="9" class="text-center text-muted py-4 small">No appointments found.</td>
               </tr>
             @endforelse
           </tbody>
@@ -180,6 +205,15 @@
                   <option value="">Select doctor</option>
                   @foreach ($doctors as $doctor)
                     <option value="{{ $doctor->id }}" @selected(old('quick_form') === 'appointment' && old('doctor_id') == $doctor->id)>{{ $doctor->name }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold">Department</label>
+                <select class="form-select form-select-sm @error('department_id') is-invalid @enderror" name="department_id">
+                  <option value="">Auto from doctor</option>
+                  @foreach ($departments as $department)
+                    <option value="{{ $department->id }}" @selected(old('quick_form') === 'appointment' && old('department_id') == $department->id)>{{ $department->name }}</option>
                   @endforeach
                 </select>
               </div>
@@ -251,8 +285,8 @@
       exportButton?.addEventListener('click', () => {
         const rows = Array.from(document.querySelectorAll('table tbody tr'))
           .filter((row) => row.querySelectorAll('td').length > 1)
-          .map((row) => Array.from(row.querySelectorAll('td'))
-            .slice(1, 7)
+            .map((row) => Array.from(row.querySelectorAll('td'))
+            .slice(1, 8)
             .map((cell) => `"${cell.textContent.trim().replaceAll('"', '""')}"`)
             .join(','));
 
@@ -260,7 +294,7 @@
           return;
         }
 
-        const csv = ['Name,Date,Time,Doctor,Treatment,Status', ...rows].join('\n');
+        const csv = ['Name,Date,Time,Doctor,Department,Treatment,Status', ...rows].join('\n');
         const link = document.createElement('a');
 
         link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;

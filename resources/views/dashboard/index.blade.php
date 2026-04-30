@@ -21,6 +21,7 @@
   <div class="row g-3">
     <div class="col-xl-9">
       <div class="row g-3 mb-3">
+        @if(auth()->user()->isAdmin())
         <div class="col-6 col-xl-3">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body py-3">
@@ -47,6 +48,30 @@
             </div>
           </div>
         </div>
+        @endif
+
+        @if(auth()->user()->isDoctor() && $doctor)
+        <div class="col-6 col-xl-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="rounded-2 bg-light d-inline-flex align-items-center justify-content-center" style="width:32px;height:32px;"><i class="fas fa-stethoscope"></i></span>
+                  <span class="text-muted small">My Availability</span>
+                </div>
+              </div>
+              <form action="{{ route('availability.update') }}" method="POST" class="d-flex align-items-center gap-2">
+                @csrf
+                <select name="availability_status" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                  <option value="available" @selected($doctor->availability_status === 'available')>Available</option>
+                  <option value="unavailable" @selected($doctor->availability_status === 'unavailable')>Unavailable</option>
+                </select>
+                <span class="badge {{ $doctor->isAvailable() ? 'bg-success' : 'bg-danger' }} rounded-pill px-2" style="font-size:.68rem;">{{ ucfirst($doctor->availability_status) }}</span>
+              </form>
+            </div>
+          </div>
+        </div>
+        @endif
 
         <div class="col-6 col-xl-3">
           <div class="card border-0 shadow-sm h-100">
@@ -102,6 +127,7 @@
           </div>
         </div>
 
+        @if(auth()->user()->isAdmin())
         <div class="col-6 col-xl-3">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body py-3">
@@ -128,6 +154,7 @@
             </div>
           </div>
         </div>
+        @endif
       </div>
 
       <div class="row g-3 mb-3">
@@ -181,6 +208,7 @@
         </div>
       </div>
 
+      @if(auth()->user()->isAdmin())
       <div class="row g-3 mb-3">
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100">
@@ -242,6 +270,7 @@
           </div>
         </div>
       </div>
+      @endif
 
       <div class="card border-0 shadow-sm">
         <div class="card-body">
@@ -298,7 +327,9 @@
                         <button class="btn btn-sm btn-outline-secondary border-0 p-1" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h text-muted" style="font-size:.7rem;"></i></button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size:.8rem;">
                           <li><a class="dropdown-item" href="{{ route('appointments.show', $appointment) }}">Open</a></li>
+                          @if(auth()->user()->isAdmin())
                           <li><a class="dropdown-item" href="{{ route('appointments.edit', $appointment) }}">Reschedule</a></li>
+                          @endif
                         </ul>
                       </div>
                     </td>

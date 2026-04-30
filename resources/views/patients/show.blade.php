@@ -46,6 +46,17 @@
               <i class="fas fa-bed text-info"></i> {{ $patient->room_number ?? 'No room assigned' }}
             </div>
           </div>
+
+          @if (auth()->user()->isAdmin())
+            <div class="d-grid gap-2 mt-4">
+              <a href="{{ route('patients.edit', $patient) }}" class="btn btn-dark btn-sm">Edit Patient</a>
+              <form action="{{ route('patients.destroy', $patient) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Delete this patient?')">Delete Patient</button>
+              </form>
+            </div>
+          @endif
         </div>
       </div>
     </div>

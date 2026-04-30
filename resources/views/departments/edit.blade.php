@@ -23,6 +23,12 @@
           <button type="submit" class="btn btn-dark">Update Department</button>
         </div>
       </form>
+
+      <form action="{{ route('departments.destroy', $department) }}" method="POST" class="mt-3">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this department?')">Delete Department</button>
+      </form>
     </div>
   </div>
 @endsection

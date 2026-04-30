@@ -137,6 +137,13 @@
                       <a href="{{ route('doctors.edit', $doctor) }}" class="btn btn-sm btn-outline-secondary border-0 p-1" title="Edit">
                         <i class="fas fa-edit text-muted" style="font-size:.75rem;"></i>
                       </a>
+                      <form action="{{ route('doctors.destroy', $doctor) }}" method="POST" onsubmit="return confirm('Delete this doctor?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-secondary border-0 p-1" title="Delete">
+                          <i class="fas fa-trash text-danger" style="font-size:.75rem;"></i>
+                        </button>
+                      </form>
                     @endif
                     <a href="{{ route('doctors.schedule', $doctor) }}" class="btn btn-sm btn-outline-secondary border-0 p-1" title="Schedule">
                       <i class="fas fa-calendar-day text-muted" style="font-size:.75rem;"></i>

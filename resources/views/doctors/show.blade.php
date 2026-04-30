@@ -20,7 +20,7 @@
     <div class="col-lg-3">
       <div class="card border-0 shadow-sm h-100">
         <div class="card-body text-center pt-4">
-          <img src="{{ $doctor->avatar_path ? asset($doctor->avatar_path) : asset('assets/images/profile/user-1.jpg') }}" alt="{{ $doctor->name }}"
+          <img src="{{ $doctor->avatar ? asset('storage/' . $doctor->avatar) : asset('assets/images/profile/user-1.jpg') }}" alt="{{ $doctor->name }}"
             class="rounded-3 mb-3 object-fit-cover"
             style="width:130px;height:130px;">
 
@@ -57,6 +57,17 @@
               <i class="fas fa-map-marker-alt text-info"></i> {{ $doctor->address ?? 'No address' }}
             </div>
           </div>
+
+          @if (auth()->user()->isAdmin())
+            <div class="d-grid gap-2 mt-4">
+              <a href="{{ route('doctors.edit', $doctor) }}" class="btn btn-dark btn-sm">Edit Doctor</a>
+              <form action="{{ route('doctors.destroy', $doctor) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Delete this doctor?')">Delete Doctor</button>
+              </form>
+            </div>
+          @endif
         </div>
       </div>
     </div>
