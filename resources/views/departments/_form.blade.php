@@ -20,9 +20,9 @@
   </div>
   <div class="col-md-4">
     <label class="form-label small fw-semibold">Icon</label>
-    @if($department->icon)
+    @if($department->icon_url)
       <div class="mb-2">
-        <img src="{{ asset('storage/' . $department->icon) }}" alt="Icon" class="rounded" style="width:60px;height:60px;object-fit:cover;">
+        <img src="{{ $department->icon_url }}" alt="Icon" class="rounded" style="width:60px;height:60px;object-fit:cover;" onerror="this.style.display='none'">
       </div>
     @endif
     <input type="file" name="icon" class="form-control @error('icon') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
@@ -30,9 +30,9 @@
   </div>
   <div class="col-md-4">
     <label class="form-label small fw-semibold">Hero Image</label>
-    @if($department->hero_image)
+    @if($department->hero_image_url)
       <div class="mb-2">
-        <img src="{{ asset('storage/' . $department->hero_image) }}" alt="Hero" class="rounded" style="width:100px;height:60px;object-fit:cover;">
+        <img src="{{ $department->hero_image_url }}" alt="Hero" class="rounded" style="width:100px;height:60px;object-fit:cover;" onerror="this.style.display='none'">
       </div>
     @endif
     <input type="file" name="hero_image" class="form-control @error('hero_image') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
@@ -40,9 +40,9 @@
   </div>
   <div class="col-md-4">
     <label class="form-label small fw-semibold">Sidebar Image</label>
-    @if($department->sidebar_image)
+    @if($department->sidebar_image_url)
       <div class="mb-2">
-        <img src="{{ asset('storage/' . $department->sidebar_image) }}" alt="Sidebar" class="rounded" style="width:100px;height:60px;object-fit:cover;">
+        <img src="{{ $department->sidebar_image_url }}" alt="Sidebar" class="rounded" style="width:100px;height:60px;object-fit:cover;" onerror="this.style.display='none'">
       </div>
     @endif
     <input type="file" name="sidebar_image" class="form-control @error('sidebar_image') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">

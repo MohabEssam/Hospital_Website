@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateDepartmentRequest;
 use App\Models\Department;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 
 class DepartmentController extends Controller
 {
@@ -38,7 +39,8 @@ class DepartmentController extends Controller
      */
     public function store(StoreDepartmentRequest $request): RedirectResponse
     {
-        $department = Department::create($request->validated());
+        $data = $this->handleImageUploads($request->validated(), $request);
+        $department = Department::create($data);
 
         return redirect()
             ->route('departments.show', $department)
@@ -80,7 +82,8 @@ class DepartmentController extends Controller
      */
     public function update(UpdateDepartmentRequest $request, Department $department): RedirectResponse
     {
-        $department->update($request->validated());
+        $data = $this->handleImageUploads($request->validated(), $request, $department);
+        $department->update($data);
 
         return redirect()
             ->route('departments.show', $department)
@@ -92,10 +95,41 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department): RedirectResponse
     {
+        foreach (['icon', 'hero_image', 'sidebar_image'] as $field) {
+            if ($department->{$field}) {
+                Storage::disk('public')->delete($department->{$field});
+            }
+        }
+
         $department->delete();
 
         return redirect()
             ->route('departments.index')
             ->with('status', 'Department deleted successfully.');
+    }
+
+    /**
+     * Handle image file uploads for store/update operations.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function handleImageUploads(array $data, StoreDepartmentRequest|UpdateDepartmentRequest $request, ?Department $department = null): array
+    {
+        $imageFields = ['icon', 'hero_image', 'sidebar_image'];
+
+        foreach ($imageFields as $field) {
+            if ($request->hasFile($field)) {
+                if ($department && $department->{$field}) {
+                    Storage::disk('public')->delete($department->{$field});
+                }
+
+                $data[$field] = $request->file($field)->store('departments', 'public');
+            } else {
+                unset($data[$field]);
+            }
+        }
+
+        return $data;
     }
 }

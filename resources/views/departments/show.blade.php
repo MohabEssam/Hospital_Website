@@ -1,14 +1,33 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{{ route('departments.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 lh-1">
-      <i class="fas fa-arrow-left"></i>
-    </a>
-    <div>
-      <p class="mb-0 text-muted small">Back to Department List</p>
-      <h4 class="fw-bold mb-0">{{ $department->name }}</h4>
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{{ route('departments.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 lh-1">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <div>
+        <p class="mb-0 text-muted small">Back to Department List</p>
+        <h4 class="fw-bold mb-0">{{ $department->name }}</h4>
+      </div>
     </div>
+
+    @auth
+      @if (auth()->user()->isAdmin())
+        <div class="d-flex gap-2">
+          <a href="{{ route('departments.edit', $department) }}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-edit me-1"></i> Edit
+          </a>
+          <form action="{{ route('departments.destroy', $department) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this department?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="fas fa-trash-alt me-1"></i> Delete
+            </button>
+          </form>
+        </div>
+      @endif
+    @endauth
   </div>
 
   <div class="row g-4">
@@ -17,7 +36,7 @@
       <p class="text-muted mb-4">{{ $department->description }}</p>
 
       <div class="mb-4">
-        <img src="{{ $department->hero_image ? asset($department->hero_image) : asset('assets/images/Department/cardiology-edit.jpg') }}" alt="{{ $department->name }}" class="dept-hero">
+        <img src="{{ $department->hero_image_url ?? asset('assets/images/Department/cardiology-edit.jpg') }}" alt="{{ $department->name }}" class="dept-hero" onerror="this.src='{{ asset('assets/images/Department/cardiology-edit.jpg') }}'">
       </div>
 
       <h6 class="fw-bold text-uppercase text-muted mb-3" style="letter-spacing:.05em;font-size:.75rem;">Services &amp; Treatments</h6>
@@ -70,7 +89,7 @@
         </ul>
 
         <div class="mb-3">
-          <img src="{{ $department->sidebar_image ? asset($department->sidebar_image) : asset('assets/images/Department/specialist-side-image.jpg') }}" alt="{{ $department->name }}" class="sidebar-banner">
+          <img src="{{ $department->sidebar_image_url ?? asset('assets/images/Department/specialist-side-image.jpg') }}" alt="{{ $department->name }}" class="sidebar-banner" onerror="this.src='{{ asset('assets/images/Department/specialist-side-image.jpg') }}'">
         </div>
 
         <div class="d-flex align-items-center gap-2 mb-2">

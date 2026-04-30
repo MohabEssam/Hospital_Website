@@ -13,7 +13,7 @@
 
   <div class="card border-0 shadow-sm">
     <div class="card-body">
-      <form action="{{ route('departments.update', $department) }}" method="POST">
+      <form action="{{ route('departments.update', $department) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         @include('departments._form')

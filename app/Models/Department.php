@@ -25,6 +25,17 @@ class Department extends Model
         'is_active',
     ];
 
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'icon_url',
+        'hero_image_url',
+        'sidebar_image_url',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -56,6 +67,30 @@ class Department extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Get the icon image URL.
+     */
+    public function getIconUrlAttribute(): ?string
+    {
+        return $this->icon ? asset('storage/' . $this->icon) : null;
+    }
+
+    /**
+     * Get the hero image URL.
+     */
+    public function getHeroImageUrlAttribute(): ?string
+    {
+        return $this->hero_image ? asset('storage/' . $this->hero_image) : null;
+    }
+
+    /**
+     * Get the sidebar image URL.
+     */
+    public function getSidebarImageUrlAttribute(): ?string
+    {
+        return $this->sidebar_image ? asset('storage/' . $this->sidebar_image) : null;
     }
 
     protected static function buildUniqueSlug(string $name, ?int $ignoreId = null): string
