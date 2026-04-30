@@ -7,12 +7,15 @@ use App\Http\Requests\UpdateDoctorRequest;
 use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
+use App\Models\DoctorSchedule;
 use App\Models\Patient;
+use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DoctorController extends Controller
 {
@@ -76,7 +79,14 @@ class DoctorController extends Controller
      */
     public function store(StoreDoctorRequest $request): RedirectResponse
     {
-        $doctor = Doctor::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('avatar')) {
+            $data['avatar'] = $request->file('avatar')
+                ->storeAs('doctors', time() . '_' . $request->file('avatar')->getClientOriginalName(), 'public');
+        }
+
+        $doctor = Doctor::create($data);
 
         return redirect()
             ->route('doctors.show', $doctor)
@@ -139,6 +149,11 @@ class DoctorController extends Controller
 
     public function schedule(Request $request, Doctor $doctor): View
     {
+        abort_unless($request->user()->isAdmin() || $request->user()->doctorProfile?->is($doctor), 403);
+
+        app(DoctorScheduleService::class)->seedDefaultSchedule($doctor);
+        $doctor->load('schedules');
+
         $month = max(1, min(12, $request->integer('month', today()->month)));
         $year = max(2020, $request->integer('year', today()->year));
         $calendarDate = Carbon::create($year, $month, 1);
@@ -160,7 +175,51 @@ class DoctorController extends Controller
             'calendarDate' => $calendarDate,
             'appointmentsByDate' => $appointments,
             'allDoctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
+            'weeklySchedules' => $doctor->schedules->groupBy('day_of_week'),
         ]);
+    }
+
+    public function updateWeeklySchedule(Request $request, Doctor $doctor): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin() || $request->user()->doctorProfile?->is($doctor), 403);
+
+        $validated = $request->validate([
+            'slots' => ['array'],
+            'slots.*' => ['array'],
+            'slots.*.*.start_time' => ['nullable', 'date_format:H:i'],
+            'slots.*.*.end_time' => ['nullable', 'date_format:H:i'],
+            'slots.*.*.is_available' => ['nullable', 'boolean'],
+        ]);
+
+        $doctor->schedules()->delete();
+
+        foreach (($validated['slots'] ?? []) as $dayOfWeek => $slots) {
+            if ((int) $dayOfWeek < 0 || (int) $dayOfWeek > 6) {
+                continue;
+            }
+
+            foreach ($slots as $slot) {
+                if (blank($slot['start_time'] ?? null) || blank($slot['end_time'] ?? null)) {
+                    continue;
+                }
+
+                if (Carbon::createFromFormat('H:i', $slot['end_time'])->lessThanOrEqualTo(Carbon::createFromFormat('H:i', $slot['start_time']))) {
+                    continue;
+                }
+
+                DoctorSchedule::create([
+                    'doctor_id' => $doctor->getKey(),
+                    'day_of_week' => (int) $dayOfWeek,
+                    'start_time' => $slot['start_time'],
+                    'end_time' => $slot['end_time'],
+                    'is_available' => (bool) ($slot['is_available'] ?? false),
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('doctors.schedule', $doctor)
+            ->with('status', 'Weekly schedule updated successfully.');
     }
 
     /**
@@ -179,7 +238,18 @@ class DoctorController extends Controller
      */
     public function update(UpdateDoctorRequest $request, Doctor $doctor): RedirectResponse
     {
-        $doctor->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('avatar')) {
+            if ($doctor->avatar && Storage::disk('public')->exists($doctor->avatar)) {
+                Storage::disk('public')->delete($doctor->avatar);
+            }
+
+            $data['avatar'] = $request->file('avatar')
+                ->storeAs('doctors', time() . '_' . $request->file('avatar')->getClientOriginalName(), 'public');
+        }
+
+        $doctor->update($data);
 
         return redirect()
             ->route('doctors.show', $doctor)
@@ -191,6 +261,10 @@ class DoctorController extends Controller
      */
     public function destroy(Doctor $doctor): RedirectResponse
     {
+        if ($doctor->avatar && Storage::disk('public')->exists($doctor->avatar)) {
+            Storage::disk('public')->delete($doctor->avatar);
+        }
+
         $doctor->delete();
 
         return redirect()

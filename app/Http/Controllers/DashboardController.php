@@ -9,6 +9,9 @@ use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
@@ -152,8 +155,11 @@ class DashboardController extends Controller
             ->get(['appointment_date'])
             ->countBy(fn (Appointment $appointment) => $appointment->appointment_date->toDateString());
 
+        $doctor = $user->isDoctor() ? $user->doctorProfile : null;
+
         return view('dashboard.index', [
             'stats' => $stats,
+            'doctor' => $doctor,
             'patientAgeGroups' => $ageGroups,
             'revenueLabels' => $chartLabels->map->format('D')->all(),
             'incomeSeries' => $incomeSeries,
@@ -212,7 +218,13 @@ class DashboardController extends Controller
         }
 
         if ($user->isDoctor() && $user->doctorProfile) {
-            return $query->where('doctor_id', $user->doctorProfile->getKey());
+            return $query->whereIn(
+                'id',
+                Appointment::query()
+                    ->where('doctor_id', $user->doctorProfile->getKey())
+                    ->select('patient_id')
+                    ->distinct(),
+            );
         }
 
         if ($user->isPatient()) {
@@ -220,5 +232,22 @@ class DashboardController extends Controller
         }
 
         return $query->whereRaw('1 = 0');
+    }
+
+    public function updateAvailability(Request $request): RedirectResponse
+    {
+        $doctor = $request->user()->doctorProfile;
+
+        abort_unless($doctor, 403);
+
+        $validated = $request->validate([
+            'availability_status' => ['required', Rule::in(Doctor::availabilityOptions())],
+        ]);
+
+        $doctor->update($validated);
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Availability updated to ' . ucfirst($doctor->availability_status) . '.');
     }
 }

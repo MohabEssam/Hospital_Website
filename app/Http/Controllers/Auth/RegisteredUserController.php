@@ -30,6 +30,7 @@ class RegisteredUserController extends Controller
             'user_id' => $user->getKey(),
             'name' => $user->name,
             'email' => $user->email,
+            'age' => $request->validated('age'),
             'status' => Patient::STATUS_NEW,
             'check_in_date' => today(),
         ]);
@@ -37,6 +38,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return redirect()->route('home');
     }
 }

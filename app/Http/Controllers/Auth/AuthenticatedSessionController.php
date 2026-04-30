@@ -26,6 +26,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        if ($user->isPatient()) {
+            return redirect()->intended(route('home'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
@@ -36,6 +42,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('home');
     }
 }

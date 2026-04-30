@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
+use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
@@ -28,7 +29,7 @@ class AppointmentController extends Controller
 
         $appointments = $this->applyFilters(
             $this->visibleAppointmentsQuery($request->user())
-                ->with(['patient', 'doctor.department']),
+                ->with(['patient', 'doctor.department', 'department']),
             $request,
             true,
         )
@@ -40,8 +41,9 @@ class AppointmentController extends Controller
         return view('appointments.index', [
             'appointments' => $appointments,
             'doctors' => $this->assignableDoctors($request->user()),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
             'patients' => $this->assignablePatients($request->user()),
-            'filters' => $request->only(['search', 'status', 'doctor_id', 'appointment_date']),
+            'filters' => $request->only(['search', 'status', 'doctor_id', 'department_id', 'appointment_date']),
             'statusCounts' => [
                 'all' => (clone $baseQuery)->count(),
                 'confirmed' => (clone $baseQuery)->where('status', Appointment::STATUS_CONFIRMED)->count(),
@@ -60,6 +62,7 @@ class AppointmentController extends Controller
             'appointment' => new Appointment(),
             'patients' => $this->assignablePatients($request->user()),
             'doctors' => $this->assignableDoctors($request->user()),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -85,7 +88,7 @@ class AppointmentController extends Controller
         abort_unless($this->canAccess($appointment, auth()->user()), 403);
 
         return view('appointments.show', [
-            'appointment' => $appointment->load(['patient.doctor', 'doctor.department']),
+            'appointment' => $appointment->load(['patient.doctor', 'doctor.department', 'department']),
         ]);
     }
 
@@ -100,6 +103,7 @@ class AppointmentController extends Controller
             'appointment' => $appointment,
             'patients' => $this->assignablePatients($request->user()),
             'doctors' => $this->assignableDoctors($request->user()),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -171,6 +175,7 @@ class AppointmentController extends Controller
                 fn (Builder $builder) => $builder->where('status', $request->string('status')),
             )
             ->when($request->filled('doctor_id'), fn (Builder $builder) => $builder->where('doctor_id', $request->integer('doctor_id')))
+            ->when($request->filled('department_id'), fn (Builder $builder) => $builder->where('department_id', $request->integer('department_id')))
             ->when($request->filled('appointment_date'), fn (Builder $builder) => $builder->whereDate('appointment_date', $request->date('appointment_date')));
     }
 
@@ -190,6 +195,10 @@ class AppointmentController extends Controller
         if ($user->isPatient() && $user->patientProfile) {
             $data['patient_id'] = $user->patientProfile->getKey();
             $data['status'] = Appointment::STATUS_PENDING;
+        }
+
+        if (empty($data['department_id'])) {
+            $data['department_id'] = Doctor::query()->find($data['doctor_id'])?->department_id;
         }
 
         if (empty($data['fee'])) {
