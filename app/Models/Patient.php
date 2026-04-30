@@ -25,6 +25,7 @@ class Patient extends Model
         'email',
         'phone',
         'date_of_birth',
+        'age',
         'gender',
         'check_in_date',
         'treatment',
@@ -81,7 +82,7 @@ class Patient extends Model
 
     public function age(): ?int
     {
-        return $this->date_of_birth?->age;
+        return $this->date_of_birth?->age ?? $this->attributes['age'] ?? null;
     }
 
     public function initials(): string

@@ -18,6 +18,7 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'doctor_id',
+        'department_id',
         'appointment_date',
         'start_time',
         'end_time',
@@ -25,6 +26,8 @@ class Appointment extends Model
         'treatment',
         'notes',
         'fee',
+        'type',
+        'reference_id',
     ];
 
     protected function casts(): array
@@ -55,6 +58,11 @@ class Appointment extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function isCancelled(): bool

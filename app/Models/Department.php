@@ -17,9 +17,9 @@ class Department extends Model
         'slug',
         'description',
         'services',
-        'icon_path',
-        'hero_image_path',
-        'sidebar_image_path',
+        'icon',
+        'hero_image',
+        'sidebar_image',
         'contact_phone',
         'contact_email',
         'is_active',
@@ -46,6 +46,11 @@ class Department extends Model
     public function doctors(): HasMany
     {
         return $this->hasMany(Doctor::class);
+    }
+
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
     }
 
     public function scopeActive($query)

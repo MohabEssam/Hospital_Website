@@ -45,8 +45,9 @@ class UpdateDoctorRequest extends FormRequest
             'address' => ['nullable', 'string'],
             'availability_status' => ['required', Rule::in(Doctor::availabilityOptions())],
             'consultation_fee' => ['required', 'numeric', 'min:0'],
-            'avatar_path' => ['nullable', 'string', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'years_of_experience' => ['nullable', 'integer', 'min:0', 'max:70'],
+            'rating' => ['nullable', 'numeric', 'min:0', 'max:5'],
         ];
     }
 

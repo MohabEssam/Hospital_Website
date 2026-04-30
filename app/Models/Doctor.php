@@ -30,8 +30,9 @@ class Doctor extends Model
         'address',
         'availability_status',
         'consultation_fee',
-        'avatar_path',
+        'avatar',
         'years_of_experience',
+        'rating',
     ];
 
     protected function casts(): array
@@ -39,6 +40,7 @@ class Doctor extends Model
         return [
             'consultation_fee' => 'decimal:2',
             'years_of_experience' => 'integer',
+            'rating' => 'decimal:1',
         ];
     }
 
@@ -80,6 +82,11 @@ class Doctor extends Model
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(DoctorSchedule::class);
     }
 
     public function patients(): HasMany

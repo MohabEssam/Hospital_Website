@@ -1,6 +1,6 @@
 {
     "agents": [
-        "codex"
+        "cursor"
     ],
     "mcp": true,
     "nightwatch_mcp": false,

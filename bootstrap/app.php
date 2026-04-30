@@ -14,7 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
-        $middleware->redirectUsersTo(fn (Request $request) => route('dashboard'));
+        $middleware->redirectUsersTo(function (Request $request) {
+            $user = $request->user();
+
+            if ($user && $user->role === 'patient') {
+                return route('home');
+            }
+
+            return route('dashboard');
+        });
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
         ]);

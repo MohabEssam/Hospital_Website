@@ -20,12 +20,16 @@ class AppointmentFactory extends Factory
      */
     public function definition(): array
     {
+        $doctor = Doctor::query()->inRandomOrder()->first() ?? Doctor::factory()->create();
+        $patient = Patient::query()->inRandomOrder()->first() ?? Patient::factory()->create();
+
         $startHour = fake()->numberBetween(8, 15);
         $startTime = Carbon::createFromTime($startHour, fake()->randomElement([0, 30]));
 
         return [
-            'patient_id' => Patient::factory(),
-            'doctor_id' => Doctor::factory(),
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+            'department_id' => $doctor->department_id,
             'appointment_date' => fake()->dateTimeBetween('-3 days', '+14 days'),
             'start_time' => $startTime->format('H:i'),
             'end_time' => $startTime->copy()->addMinutes(30)->format('H:i'),
