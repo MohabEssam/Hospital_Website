@@ -8,7 +8,7 @@
 
   <link href="{{ asset('website-assets/img/favicon.png') }}" rel="icon">
   <link href="{{ asset('website-assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
-
+<link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/hospital (1).png') }}"/>
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Poppins&family=Raleway&display=swap" rel="stylesheet">

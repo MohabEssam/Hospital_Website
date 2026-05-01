@@ -244,7 +244,7 @@
 
 /* ── Hero ───────────────────────────────────────────────────── */
 .dept-hero {
-  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 50%, #084298 100%);
+  background: linear-gradient(135deg, #3f4047 0%, #2d2e33 50%, #1a1b1f 100%);
   padding: 56px 0 48px;
   position: relative;
   overflow: hidden;
@@ -361,14 +361,14 @@
   margin-bottom: 2px;
 }
 .dept-sidebar-item:hover {
-  background: #e7f1ff;
-  color: #0d6efd;
+  background: #e8e8ea;
+  color: #3f4047;
   transform: translateX(4px);
 }
 .dept-sidebar-item.active {
-  background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+  background: linear-gradient(135deg, #3f4047, #2d2e33);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(13,110,253,0.25);
+  box-shadow: 0 4px 16px rgba(63,64,71,0.25);
 }
 .dept-sidebar-item.active .dept-sidebar-count,
 .dept-sidebar-item.active .dept-sidebar-arrow {
@@ -377,13 +377,13 @@
 .dept-sidebar-icon {
   width: 40px;
   height: 40px;
-  background: #e7f1ff;
+  background: #e8e8ea;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  color: #0d6efd;
+  color: #3f4047;
   flex-shrink: 0;
   transition: all 0.25s;
 }
@@ -392,7 +392,7 @@
   color: #fff;
 }
 .dept-sidebar-item:hover .dept-sidebar-icon {
-  background: #0d6efd;
+  background: #3f4047;
   color: #fff;
 }
 .dept-sidebar-name {
@@ -412,7 +412,7 @@
 }
 .dept-sidebar-item:hover .dept-sidebar-arrow {
   transform: translateX(3px);
-  color: #0d6efd;
+  color: #3f4047;
 }
 .dept-sidebar-item.active .dept-sidebar-arrow {
   transform: translateX(3px);
@@ -421,33 +421,33 @@
 /* Sidebar toggle (mobile) */
 .dept-sidebar-toggle {
   background: #fff;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
   padding: 12px 20px;
   font-weight: 600;
   font-size: 15px;
-  color: #0d6efd;
+  color: #3f4047;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s;
 }
 .dept-sidebar-toggle:hover {
-  background: #e7f1ff;
-  border-color: #0d6efd;
+  background: #e8e8ea;
+  border-color: #3f4047;
 }
 
 /* Contact card */
 .dept-contact-card {
   margin: 8px;
   padding: 20px;
-  background: linear-gradient(135deg, #e7f1ff, #f0f7ff);
+  background: linear-gradient(135deg, #e8e8ea, #f3f4f6);
   border-radius: 12px;
   margin-top: 4px;
 }
 .dept-contact-card h6 {
   font-weight: 600;
-  color: #0d6efd;
+  color: #3f4047;
   margin-bottom: 12px;
 }
 .dept-contact-card p {
@@ -478,7 +478,7 @@
 }
 .dept-card-header i {
   font-size: 20px;
-  color: #0d6efd;
+  color: #3f4047;
 }
 .dept-card-header h4 {
   font-family: 'Poppins', sans-serif;
@@ -489,8 +489,8 @@
 }
 .dept-card-badge {
   margin-left: auto;
-  background: #e7f1ff;
-  color: #0d6efd;
+  background: #e8e8ea;
+  color: #3f4047;
   padding: 5px 14px;
   border-radius: 99px;
   font-size: 12px;
@@ -530,26 +530,26 @@
   transition: all 0.3s ease;
 }
 .dept-service-card:hover {
-  background: #e7f1ff;
-  border-color: #bbd4ff;
+  background: #e8e8ea;
+  border-color: #d1d1d3;
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(13,110,253,0.08);
+  box-shadow: 0 4px 16px rgba(63,64,71,0.08);
 }
 .dept-service-icon {
   width: 40px;
   height: 40px;
-  background: #e7f1ff;
+  background: #e8e8ea;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0d6efd;
+  color: #3f4047;
   font-size: 18px;
   flex-shrink: 0;
   transition: all 0.3s;
 }
 .dept-service-card:hover .dept-service-icon {
-  background: #0d6efd;
+  background: #3f4047;
   color: #fff;
 }
 .dept-service-name {
@@ -571,8 +571,8 @@
 }
 .dept-doctor-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 32px rgba(13,110,253,0.12);
-  border-color: #0d6efd;
+  box-shadow: 0 12px 32px rgba(63,64,71,0.12);
+  border-color: #3f4047;
 }
 .dept-doctor-img-wrap {
   position: relative;
@@ -591,7 +591,7 @@
 .dept-doctor-initials {
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+  background: linear-gradient(135deg, #3f4047 0%, #1a1b1f 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -642,7 +642,7 @@
   margin-bottom: 2px;
 }
 .dept-doctor-spec {
-  color: #0d6efd;
+  color: #3f4047;
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 10px;
@@ -656,7 +656,7 @@
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .dept-btn-primary {
-  background: #0d6efd;
+  background: #3f4047;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -672,15 +672,15 @@
   justify-content: center;
 }
 .dept-btn-primary:hover {
-  background: #0b5ed7;
+  background: #2d2e33;
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+  box-shadow: 0 4px 12px rgba(63,64,71,0.3);
 }
 .dept-btn-outline {
   background: transparent;
-  color: #0d6efd;
-  border: 1.5px solid #0d6efd;
+  color: #3f4047;
+  border: 1.5px solid #3f4047;
   border-radius: 10px;
   padding: 9px 18px;
   font-size: 13px;
@@ -694,7 +694,7 @@
   justify-content: center;
 }
 .dept-btn-outline:hover {
-  background: #0d6efd;
+  background: #3f4047;
   color: #fff;
   transform: translateY(-2px);
 }

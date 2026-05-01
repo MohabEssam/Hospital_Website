@@ -17,6 +17,19 @@
 
   <section class="dept-section-content">
     <div class="container">
+      {{-- Search & Filters Toolbar --}}
+      <div class="dept-toolbar" data-aos="fade-up" data-aos-delay="100">
+        <div class="dept-search">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search departments..." aria-label="Search departments">
+        </div>
+        <div class="dept-filters">
+          <button class="dept-filter active">All</button>
+          <button class="dept-filter">Active</button>
+          <button class="dept-filter">Popular</button>
+        </div>
+      </div>
+
       <div class="row g-4">
         @forelse($departments as $index => $department)
         <div class="col-lg-4 col-md-6 col-12" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
@@ -39,6 +52,9 @@
               </div>
               <div class="dept-card-body">
                 <h5 class="dept-card-title">{{ $department->name }}</h5>
+                <div class="dept-card-meta">
+                  <span class="dept-card-count"><i class="bi bi-people-fill"></i> {{ $department->doctors_count }} Doctor{{ $department->doctors_count !== 1 ? 's' : '' }}</span>
+                </div>
                 <p class="dept-card-desc">{{ Str::limit($department->description, 110) }}</p>
                 <span class="dept-card-cta">
                   Explore Department <i class="bi bi-arrow-right"></i>
@@ -237,6 +253,95 @@
   transform: translateX(4px);
 }
 
+/* Toolbar */
+.dept-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.dept-search {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  max-width: 400px;
+}
+.dept-search i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 16px;
+}
+.dept-search input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: #374151;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+.dept-search input:focus {
+  outline: none;
+  border-color: #3f4047;
+  box-shadow: 0 0 0 3px rgba(63, 64, 71, 0.08);
+}
+.dept-search input::placeholder {
+  color: #9ca3af;
+}
+.dept-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dept-filter {
+  padding: 8px 18px;
+  border-radius: 99px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.dept-filter:hover {
+  border-color: #3f4047;
+  color: #3f4047;
+}
+.dept-filter.active {
+  background: #3f4047;
+  color: #fff;
+  border-color: #3f4047;
+}
+
+/* Card Meta */
+.dept-card-meta {
+  margin-bottom: 10px;
+}
+.dept-card-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.dept-card-count i {
+  color: #3f4047;
+  font-size: 11px;
+}
+
 /* Empty State */
 .dept-empty-state {
   padding: 40px 20px;
@@ -257,6 +362,16 @@
 @media (max-width: 767px) {
   .dept-section-title {
     font-size: 28px;
+  }
+  .dept-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dept-search {
+    max-width: 100%;
+  }
+  .dept-filters {
+    justify-content: center;
   }
   .dept-card-image {
     height: 180px;
