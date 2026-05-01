@@ -106,168 +106,27 @@
     </section>
 
     <!-- Departments Section -->
-    <section id="departments" class="dpt-section">
-
-      {{-- Section Header --}}
-      <div class="dpt-section-header">
-        <div class="container position-relative" style="z-index:2;">
-          <div data-aos="fade-right">
-            <span class="dpt-label"><i class="bi bi-building me-1"></i> Our Specialties</span>
-            <h2 class="dpt-heading">Explore Our Departments</h2>
-            <p class="dpt-subheading">Specialized medical care across multiple disciplines, delivered by experienced professionals.</p>
-          </div>
+    <section id="departments" class="homepage-depts-section">
+      <div class="homepage-depts-wrapper">
+        {{-- Left image --}}
+        <div class="homepage-depts-image" data-aos="fade-right">
+          <img src="{{ asset('assets/images/Department/imagehome.jpg') }}" alt="Our Departments">
         </div>
-      </div>
-
-      <div class="container dpt-body">
-        <div class="row g-4">
-
-          {{-- Sidebar --}}
-          <div class="col-lg-3">
-            {{-- Mobile toggle --}}
-            <button class="btn dpt-mobile-toggle d-lg-none w-100 mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#dptSidebarCollapse">
-              <i class="bi bi-list-ul me-2"></i> Select Department
-            </button>
-            <div class="collapse d-lg-block" id="dptSidebarCollapse">
-              <div class="dpt-sidebar" data-aos="fade-right">
-                <ul class="nav nav-tabs flex-column dpt-nav" role="tablist">
-                  @foreach($departments as $index => $department)
-                  <li class="nav-item" role="presentation">
-                    <a class="dpt-nav-link {{ $index === 0 ? 'active show' : '' }}" data-bs-toggle="tab" href="#dept-tab-{{ $department->id }}" role="tab">
-                      <span class="dpt-nav-icon">
-                        @if($department->icon)
-                          <img src="{{ asset('storage/' . $department->icon) }}" alt="" style="width:20px;height:20px;">
-                        @else
-                          <i class="bi bi-hospital"></i>
-                        @endif
-                      </span>
-                      <span class="dpt-nav-text">
-                        <span class="dpt-nav-name">{{ $department->name }}</span>
-                        <span class="dpt-nav-count">{{ $department->doctors_count }} doctor{{ $department->doctors_count !== 1 ? 's' : '' }}</span>
-                      </span>
-                      <i class="bi bi-chevron-right dpt-nav-arrow"></i>
-                    </a>
-                  </li>
-                  @endforeach
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {{-- Tab Content --}}
-          <div class="col-lg-9">
-            <div class="tab-content" data-aos="fade-up">
-              @foreach($departments as $index => $department)
-              <div class="tab-pane fade {{ $index === 0 ? 'active show' : '' }}" id="dept-tab-{{ $department->id }}" role="tabpanel">
-
-                {{-- Department Overview Card --}}
-                <div class="dpt-overview-card">
-                  @if($department->hero_image)
-                    <div class="dpt-overview-img">
-                      <img src="{{ asset('storage/' . $department->hero_image) }}" alt="{{ $department->name }}">
-                      <div class="dpt-overview-overlay">
-                        <span class="dpt-overview-badge"><i class="bi bi-people-fill me-1"></i> {{ $department->doctors_count }} Doctor{{ $department->doctors_count !== 1 ? 's' : '' }}</span>
-                      </div>
-                    </div>
-                  @endif
-                  <div class="dpt-overview-body">
-                    <h3 class="dpt-overview-title">{{ $department->name }}</h3>
-                    <p class="dpt-overview-desc">{{ $department->description }}</p>
-                    @if($department->contact_email || $department->contact_phone)
-                    <div class="dpt-overview-contact">
-                      @if($department->contact_phone)
-                        <span><i class="bi bi-telephone me-1"></i> {{ $department->contact_phone }}</span>
-                      @endif
-                      @if($department->contact_email)
-                        <span><i class="bi bi-envelope me-1"></i> {{ $department->contact_email }}</span>
-                      @endif
-                    </div>
-                    @endif
-                  </div>
-                </div>
-
-                {{-- Services Grid --}}
-                @if($department->services && count($department->services) > 0)
-                <div class="dpt-block">
-                  <h4 class="dpt-block-title"><i class="bi bi-clipboard2-check-fill me-2"></i>Services Offered</h4>
-                  <div class="row g-3">
-                    @foreach($department->services as $si => $service)
-                    <div class="col-sm-6">
-                      <div class="dpt-service-item">
-                        <span class="dpt-service-icon"><i class="bi bi-check-circle-fill"></i></span>
-                        <span class="dpt-service-text">{{ $service }}</span>
-                      </div>
-                    </div>
-                    @endforeach
-                  </div>
-                </div>
+        {{-- Right grid --}}
+        <div class="homepage-depts-grid" data-aos="fade-up">
+          @foreach($departments as $index => $department)
+            <a href="{{ route('website.departments.show', $department) }}" class="homepage-dept-cell">
+              <div class="homepage-dept-icon">
+                @if($department->icon)
+                  <img src="{{ asset('storage/' . $department->icon) }}" alt="{{ $department->name }}">
+                @else
+                  <i class="bi bi-hospital"></i>
                 @endif
-
-                {{-- Doctors Grid --}}
-                @if($department->doctors->count() > 0)
-                <div class="dpt-block">
-                  <h4 class="dpt-block-title"><i class="bi bi-people-fill me-2"></i>Meet Our Doctors</h4>
-                  <div class="row g-3">
-                    @foreach($department->doctors as $doctor)
-                    <div class="col-sm-6 col-xl-3">
-                      <div class="dpt-doc-card">
-                        <div class="dpt-doc-avatar-wrap">
-                          @if($doctor->avatar)
-                            <img src="{{ asset('storage/' . $doctor->avatar) }}" alt="{{ $doctor->name }}" class="dpt-doc-avatar">
-                          @else
-                            <div class="dpt-doc-initials">{{ $doctor->initials() }}</div>
-                          @endif
-                          @if($doctor->isAvailable())
-                            <span class="dpt-doc-status-dot"></span>
-                          @endif
-                        </div>
-                        <h6 class="dpt-doc-name">{{ $doctor->name }}</h6>
-                        <p class="dpt-doc-spec">{{ $doctor->specialty }}</p>
-                        <div class="dpt-doc-actions">
-                          <a href="{{ route('website.doctors.show', $doctor) }}" class="dpt-doc-btn-outline" title="View Profile">
-                            <i class="bi bi-person-lines-fill"></i>
-                          </a>
-                          @if($doctor->isAvailable())
-                            @auth
-                              @if(auth()->user()->isPatient())
-                              <a href="{{ route('website.book', ['doctor_id' => $doctor->id]) }}" class="dpt-doc-btn-primary" title="Book Now">
-                                <i class="bi bi-calendar-check"></i>
-                              </a>
-                              @endif
-                            @else
-                              <a href="{{ route('login') }}" class="dpt-doc-btn-primary" title="Login to Book">
-                                <i class="bi bi-calendar-check"></i>
-                              </a>
-                            @endauth
-                          @endif
-                        </div>
-                      </div>
-                    </div>
-                    @endforeach
-                  </div>
-                </div>
-                @endif
-
-                {{-- View full department --}}
-                <div class="text-center mt-2">
-                  <a href="{{ route('website.departments.show', $department) }}" class="dpt-link-more">
-                    View full department details <i class="bi bi-arrow-right ms-1"></i>
-                  </a>
-                </div>
-
               </div>
-              @endforeach
-            </div>
-          </div>
-
+              <p class="homepage-dept-name">{{ $department->name }}</p>
+            </a>
+          @endforeach
         </div>
-      </div>
-
-      {{-- Bottom CTA --}}
-      <div class="container text-center dpt-cta-wrap" data-aos="fade-up">
-        <a href="{{ route('website.departments') }}" class="dpt-btn-primary-lg">
-          View All Departments <i class="bi bi-arrow-right ms-2"></i>
-        </a>
       </div>
     </section>
 
