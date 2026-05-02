@@ -9,7 +9,9 @@ use App\Models\Doctor;
 use App\Notifications\AppointmentBookedNotification;
 use App\Services\AppointmentConflictService;
 use App\Services\DoctorScheduleService;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,11 @@ use Illuminate\Validation\Validator;
 
 class BookingController extends Controller
 {
+    public function __construct(
+        private readonly DoctorScheduleService $scheduleService,
+        private readonly AppointmentConflictService $conflictService,
+    ) {}
+
     public function myBookings(Request $request): View
     {
         $user = $request->user();
@@ -35,7 +42,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $doctors = Doctor::query()
             ->with('department')
@@ -43,11 +50,20 @@ class BookingController extends Controller
             ->orderBy('name')
             ->get();
 
-        $doctors->each(fn (Doctor $doctor) => app(DoctorScheduleService::class)->seedDefaultSchedule($doctor));
+        $doctors->each(fn (Doctor $doctor) => $this->scheduleService->seedDefaultSchedule($doctor));
+
+        $preselectedId = (int) $request->input('doctor_id', 0);
+        $preselectedDoctor = $preselectedId ? $doctors->firstWhere('id', $preselectedId) : null;
+
+        $weeklySlots = $preselectedDoctor
+            ? $this->scheduleService->weeklySlots($preselectedDoctor)
+            : collect();
 
         return view('website.bookings.create', [
             'doctors' => $doctors,
             'departments' => Department::query()->active()->orderBy('name')->get(),
+            'preselectedDoctor' => $preselectedDoctor,
+            'weeklySlots' => $weeklySlots,
         ]);
     }
 
@@ -58,6 +74,7 @@ class BookingController extends Controller
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
             'treatment' => ['required', 'string', 'max:255'],
+            'phone_number' => ['required', 'string', 'min:7', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -68,7 +85,7 @@ class BookingController extends Controller
 
         $doctor = Doctor::findOrFail($validated['doctor_id']);
 
-        $startTime = \Carbon\Carbon::createFromFormat('H:i', $validated['start_time']);
+        $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
         $endTime = $startTime->copy()->addMinutes(30)->format('H:i');
 
         $validator = validator($validated);
@@ -77,11 +94,11 @@ class BookingController extends Controller
                 $validator->errors()->add('doctor_id', 'The selected doctor is currently unavailable.');
             }
 
-            if (! app(DoctorScheduleService::class)->slotIsAvailable($doctor, $validated['appointment_date'], $startTime->format('H:i'))) {
+            if (! $this->scheduleService->slotIsAvailable($doctor, $validated['appointment_date'], $startTime->format('H:i'))) {
                 $validator->errors()->add('start_time', 'This time slot is not available in the doctor schedule.');
             }
 
-            if (app(AppointmentConflictService::class)->hasConflict(
+            if ($this->conflictService->hasConflict(
                 $doctor->getKey(),
                 $validated['appointment_date'],
                 $startTime->format('H:i'),
@@ -102,6 +119,7 @@ class BookingController extends Controller
             'status' => Appointment::STATUS_PENDING,
             'treatment' => $validated['treatment'],
             'notes' => $validated['notes'] ?? '',
+            'phone_number' => $validated['phone_number'],
             'fee' => $doctor->consultation_fee ?? 0,
         ]));
 
@@ -116,7 +134,33 @@ class BookingController extends Controller
                 ->notify(new AppointmentBookedNotification($appointment));
         }
 
-        return redirect()->route('my-bookings')
+        return redirect()->route('website.booking.status', $appointment)
             ->with('status', 'Appointment booked successfully!');
+    }
+
+    public function show(Request $request, Appointment $appointment): View
+    {
+        $patient = $request->user()->patientProfile;
+        abort_unless($patient && $appointment->patient_id === $patient->getKey(), 403);
+
+        $appointment->load(['doctor.department', 'patient']);
+
+        return view('website.bookings.show', [
+            'appointment' => $appointment,
+        ]);
+    }
+
+    public function slots(Request $request, Doctor $doctor): JsonResponse
+    {
+        $this->scheduleService->seedDefaultSchedule($doctor);
+        $weeklySlots = $this->scheduleService->weeklySlots($doctor);
+
+        $formatted = $weeklySlots->map(fn (array $day) => [
+            'date' => $day['date']->toDateString(),
+            'date_label' => $day['date']->format('D, M d'),
+            'slots' => $day['slots']->values()->all(),
+        ])->values();
+
+        return response()->json(['days' => $formatted]);
     }
 }

@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
         Route::get('/book', [BookingController::class, 'create'])->name('website.book');
         Route::post('/book', [BookingController::class, 'store'])->name('website.book.store');
+        Route::get('/booking/{appointment}', [BookingController::class, 'show'])->name('website.booking.status');
+        Route::get('/api/doctors/{doctor}/slots', [BookingController::class, 'slots'])->name('website.doctor.slots');
         Route::post('/doctors/{doctor}/appointments', [WebDoctorController::class, 'bookAppointment'])
             ->name('website.doctors.appointments.store');
     });

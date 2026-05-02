@@ -28,6 +28,7 @@ class Appointment extends Model
         'fee',
         'type',
         'reference_id',
+        'phone_number',
     ];
 
     protected function casts(): array

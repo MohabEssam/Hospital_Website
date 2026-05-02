@@ -176,6 +176,14 @@
                 </div>
 
                 <label class="profile-booking-notes">
+                  <span>Phone Number <span style="color:#ef4444">*</span></span>
+                  <input type="tel" name="phone_number" required minlength="7" maxlength="20"
+                    value="{{ auth()->check() ? (auth()->user()->patientProfile?->phone ?? '') : '' }}"
+                    placeholder="e.g. +1 555 123 4567"
+                    style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;outline:none;font-family:inherit;margin-top:6px;">
+                </label>
+
+                <label class="profile-booking-notes">
                   <span>Reason for visit</span>
                   <textarea name="notes" rows="3" placeholder="Add symptoms, concerns, or notes for the care team"></textarea>
                 </label>

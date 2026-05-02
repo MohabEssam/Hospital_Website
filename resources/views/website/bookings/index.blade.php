@@ -12,7 +12,10 @@
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
       @if(session('status'))
-        <div class="alert alert-success text-center">{{ session('status') }}</div>
+        <div class="alert alert-success d-flex align-items-center gap-2" role="alert" style="border-radius:12px;">
+          <i class="bi bi-check-circle-fill fs-5"></i>
+          <span>{{ session('status') }}</span>
+        </div>
       @endif
 
       @if($appointments instanceof \Illuminate\Pagination\LengthAwarePaginator && $appointments->count() > 0)
@@ -24,9 +27,11 @@
                 <th>Time</th>
                 <th>Doctor</th>
                 <th>Department</th>
+                <th>Phone</th>
                 <th>Treatment</th>
                 <th>Fee</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -36,6 +41,7 @@
                 <td>{{ $appointment->start_time }} - {{ $appointment->end_time }}</td>
                 <td>{{ $appointment->doctor?->name ?? '—' }}</td>
                 <td>{{ $appointment->doctor?->department?->name ?? '—' }}</td>
+                <td>{{ $appointment->phone_number ?? '—' }}</td>
                 <td>{{ $appointment->treatment }}</td>
                 <td>${{ number_format($appointment->fee, 2) }}</td>
                 <td>
@@ -43,9 +49,16 @@
                     <span class="badge bg-success">Confirmed</span>
                   @elseif($appointment->status === 'pending')
                     <span class="badge bg-warning text-dark">Pending</span>
+                  @elseif($appointment->status === 'rejected')
+                    <span class="badge bg-danger">Rejected</span>
                   @else
                     <span class="badge bg-danger">Cancelled</span>
                   @endif
+                </td>
+                <td>
+                  <a href="{{ route('website.booking.status', $appointment) }}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" title="View Details">
+                    <i class="bi bi-eye"></i>
+                  </a>
                 </td>
               </tr>
               @endforeach

@@ -26,6 +26,7 @@ class BookDoctorAppointmentRequest extends FormRequest
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
             'treatment' => ['required', 'string', 'max:255'],
+            'phone_number' => ['required', 'string', 'min:7', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

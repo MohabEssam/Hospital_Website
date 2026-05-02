@@ -73,6 +73,7 @@ class WebDoctorController extends Controller
                 'status' => Appointment::STATUS_PENDING,
                 'treatment' => $validated['treatment'],
                 'notes' => $validated['notes'] ?? '',
+                'phone_number' => $validated['phone_number'] ?? '',
                 'fee' => $doctor->consultation_fee ?? 0,
             ]);
         });
@@ -96,7 +97,7 @@ class WebDoctorController extends Controller
         }
 
         return redirect()
-            ->route('my-bookings')
+            ->route('website.booking.status', $appointment)
             ->with('status', 'Appointment booked successfully. Medicare will confirm it shortly.');
     }
 }
