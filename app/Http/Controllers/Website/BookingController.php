@@ -27,18 +27,30 @@ class BookingController extends Controller
 
     public function myBookings(Request $request): View
     {
-        $user = $request->user();
-        $patientProfile = $user->patientProfile;
+        $statusFilter = $request->input('status', 'all');
+        $patientProfile = $request->user()->patientProfile;
 
-        $appointments = $patientProfile
+        $query = $patientProfile
             ? Appointment::where('patient_id', $patientProfile->getKey())
-                ->with(['doctor.department'])
-                ->orderByDesc('appointment_date')
-                ->paginate(10)
-            : collect();
+            : Appointment::whereRaw('1 = 0');
+
+        // Eager load doctor relationship to prevent N+1
+        $query->with(['doctor.department']);
+
+        // Apply status filter
+        if ($statusFilter !== 'all' && in_array($statusFilter, Appointment::statusOptions(), true)) {
+            $query->where('status', $statusFilter);
+        }
+
+        $appointments = $query
+            ->orderByDesc('appointment_date')
+            ->orderBy('start_time')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('website.bookings.index', [
             'appointments' => $appointments,
+            'statusFilter' => $statusFilter,
         ]);
     }
 
@@ -162,5 +174,27 @@ class BookingController extends Controller
         ])->values();
 
         return response()->json(['days' => $formatted]);
+    }
+
+    public function cancel(Request $request, Appointment $appointment): RedirectResponse
+    {
+        $patientProfile = $request->user()->patientProfile;
+
+        abort_unless(
+            $patientProfile && $appointment->patient_id === $patientProfile->getKey(),
+            403,
+            'You are not authorized to cancel this appointment.'
+        );
+
+        // Only pending appointments can be cancelled
+        if ($appointment->status !== Appointment::STATUS_PENDING) {
+            return redirect()->route('my-bookings')
+                ->with('error', 'Only pending appointments can be cancelled.');
+        }
+
+        $appointment->update(['status' => Appointment::STATUS_CANCELLED]);
+
+        return redirect()->route('my-bookings')
+            ->with('status', 'Appointment cancelled successfully.');
     }
 }

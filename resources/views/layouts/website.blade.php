@@ -42,6 +42,15 @@
             <li><a href="{{ route('home') }}#doctors" class="{{ request()->routeIs('website.doctors*') ? 'active' : '' }}">Doctors</a></li>
             <li><a href="{{ route('home') }}#stats">Services</a></li>
             <li><a href="{{ route('home') }}#contact">Contact</a></li>
+  @auth
+    @if(auth()->user()->isPatient())
+        <li>
+            <a href="{{ route('my-bookings') }}" class="{{ request()->routeIs('my-bookings') ? 'active' : '' }}">
+                My Bookings
+            </a>
+        </li>
+    @endif
+@endauth
             <li class="mobile-nav-cta">
               <a href="{{ auth()->check() && auth()->user()->isPatient() ? route('website.book') : route('login') }}">Book Appointment</a>
             </li>
@@ -113,6 +122,7 @@
           <ul>
             <li><a href="{{ route('website.departments') }}">Medical Departments</a></li>
             <li><a href="{{ route('website.doctors') }}">Find a Doctor</a></li>
+            <li><a href="{{ route('my-bookings') }}">My Bookings</a></li>
             @auth
               @if(auth()->user()->isPatient())
                 <li><a href="{{ route('website.book') }}">Book Appointment</a></li>

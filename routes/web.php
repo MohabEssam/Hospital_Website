@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function (): void {
     // --- Patient: booking via website ---
     Route::middleware('role:patient')->group(function (): void {
         Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
+        Route::post('/my-bookings/{appointment}/cancel', [BookingController::class, 'cancel'])->name('website.booking.cancel');
         Route::get('/book', [BookingController::class, 'create'])->name('website.book');
         Route::post('/book', [BookingController::class, 'store'])->name('website.book.store');
         Route::get('/booking/{appointment}', [BookingController::class, 'show'])->name('website.booking.status');
