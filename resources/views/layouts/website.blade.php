@@ -16,7 +16,7 @@
   <link href="{{ asset('website-assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ asset('website-assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('website-assets/css/style.css') }}" rel="stylesheet">
-  <link href="{{ asset('website-assets/vendor/aos/aos.css') }}" rel="stylesheet">
+  <link href="{{ asset('website-assets/css/reveal.css') }}" rel="stylesheet">
   <link href="{{ asset('website-assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
   <link href="{{ asset('website-assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
   <link href="{{ asset('website-assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
@@ -38,9 +38,45 @@
           <ul>
             <li><a href="{{ route('home') }}#hero" class="{{ request()->routeIs('home') ? 'active' : '' }}">Home</a></li>
             <li><a href="{{ route('home') }}#about">About</a></li>
-            <li><a href="{{ route('home') }}#departments" class="{{ request()->routeIs('website.departments*') ? 'active' : '' }}">Departments</a></li>
+            <li class="dropdown specialties-dropdown">
+              <a href="{{ route('website.departments') }}" class="{{ request()->routeIs('website.departments*') ? 'active' : '' }}">
+                <span>Specialties</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+              </a>
+              <ul>
+                @foreach($navDepartments as $dept)
+                  <li>
+                    <a href="{{ route('website.departments.show', $dept) }}" class="{{ request()->is('departments/'.$dept->slug) ? 'active' : '' }}">
+                      {{ $dept->name }}
+                    </a>
+                  </li>
+                @endforeach
+                <li class="spec-dd-all">
+                  <a href="{{ route('website.departments') }}">
+                    View All Departments <i class="bi bi-arrow-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="dropdown specialties-dropdown">
+              <a href="{{ route('website.patient-care') }}" class="{{ request()->routeIs('website.patient-care*') ? 'active' : '' }}">
+                <span>Patient Care</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+              </a>
+              <ul>
+                @foreach($navPatientCareServices as $pcService)
+                  <li>
+                    <a href="{{ route('website.patient-care.show', $pcService) }}" class="{{ request()->is('patient-care/'.$pcService->slug) ? 'active' : '' }}">
+                      {{ $pcService->name }}
+                    </a>
+                  </li>
+                @endforeach
+                <li class="spec-dd-all">
+                  <a href="{{ route('website.patient-care') }}">
+                    View All Services <i class="bi bi-arrow-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </li>
             <li><a href="{{ route('home') }}#doctors" class="{{ request()->routeIs('website.doctors*') ? 'active' : '' }}">Doctors</a></li>
-            <li><a href="{{ route('home') }}#stats">Services</a></li>
             <li><a href="{{ route('home') }}#contact">Contact</a></li>
   @auth
     @if(auth()->user()->isPatient())
@@ -143,7 +179,7 @@
 
   <script src="{{ asset('website-assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ asset('website-assets/vendor/php-email-form/validate.js') }}"></script>
-  <script src="{{ asset('website-assets/vendor/aos/aos.js') }}"></script>
+  <script src="{{ asset('website-assets/js/reveal.js') }}"></script>
   <script src="{{ asset('website-assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ asset('website-assets/vendor/purecounter/purecounter_vanilla.js') }}"></script>
   <script src="{{ asset('website-assets/vendor/swiper/swiper-bundle.min.js') }}"></script>

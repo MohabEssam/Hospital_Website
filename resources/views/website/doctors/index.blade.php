@@ -5,12 +5,12 @@
 @section('content')
 
   <section class="doctors section">
-    <div class="container section-title" data-aos="fade-up">
+    <div class="container section-title reveal">
       <h2>Our Doctors</h2>
       <p>Find the right specialist for your healthcare needs</p>
     </div>
 
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
+    <div class="container reveal" style="transition-delay: 100ms">
       {{-- Filter by department --}}
       <div class="doctor-tools doctor-tools-wide">
         <label class="doctor-search">
@@ -43,7 +43,7 @@
 
       <div class="row g-4 doctor-card-grid" data-doctor-grid>
         @forelse($doctors as $doctor)
-        <div class="col-md-6 col-xl-4 doctor-card-col" data-aos="fade-up" data-aos-delay="{{ 80 + ($loop->index % 3 * 80) }}">
+        <div class="col-md-6 col-xl-4 doctor-card-col reveal" style="transition-delay: {{ 80 + ($loop->index % 3 * 80) }}ms">
           @include('website.doctors._card', ['doctor' => $doctor, 'featured' => $loop->first && !request('department_id')])
         </div>
         @empty
@@ -58,9 +58,9 @@
         <p>No doctors match your search right now.</p>
       </div>
 
-      @if($doctors instanceof \Illuminate\Pagination\LengthAwarePaginator)
-      <div class="d-flex justify-content-center mt-4">
-        {{ $doctors->withQueryString()->links() }}
+      @if($doctors instanceof \Illuminate\Pagination\LengthAwarePaginator && $doctors->hasPages())
+      <div class="mt-4">
+        {{ $doctors->withQueryString()->links('vendor.pagination.medicare') }}
       </div>
       @endif
     </div>

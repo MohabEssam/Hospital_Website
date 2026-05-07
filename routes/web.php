@@ -10,7 +10,9 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Website\BookingController;
 use App\Http\Controllers\Website\HomeController;
 use App\Http\Controllers\Website\WebDepartmentController;
+use App\Http\Controllers\Website\PatientCareController;
 use App\Http\Controllers\Website\WebDoctorController;
+use App\Http\Controllers\ServiceBookingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +26,9 @@ Route::get('/departments', [WebDepartmentController::class, 'index'])->name('web
 Route::get('/departments/{department}', [WebDepartmentController::class, 'show'])->name('website.departments.show');
 Route::get('/doctors', [WebDoctorController::class, 'index'])->name('website.doctors');
 Route::get('/doctors/{doctor}', [WebDoctorController::class, 'show'])->name('website.doctors.show');
+Route::get('/patient-care', [PatientCareController::class, 'index'])->name('website.patient-care');
+Route::get('/patient-care/{service}', [PatientCareController::class, 'show'])->name('website.patient-care.show');
+Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
 
 /*
 |--------------------------------------------------------------------------
@@ -54,7 +59,6 @@ Route::middleware('auth')->group(function (): void {
 
     // --- Patient: booking via website ---
     Route::middleware('role:patient')->group(function (): void {
-        Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
         Route::post('/my-bookings/{appointment}/cancel', [BookingController::class, 'cancel'])->name('website.booking.cancel');
         Route::get('/book', [BookingController::class, 'create'])->name('website.book');
         Route::post('/book', [BookingController::class, 'store'])->name('website.book.store');
@@ -62,18 +66,26 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/api/doctors/{doctor}/slots', [BookingController::class, 'slots'])->name('website.doctor.slots');
         Route::post('/doctors/{doctor}/appointments', [WebDoctorController::class, 'bookAppointment'])
             ->name('website.doctors.appointments.store');
+
+        Route::post('/patient-care/{service}/book', [PatientCareController::class, 'storeBooking'])
+            ->name('website.patient-care.book');
     });
 
     // --- Dashboard routes (admin & doctor only) ---
     Route::middleware('role:admin,doctor')->prefix('dashboard')->group(function (): void {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/patient-overview', [DashboardController::class, 'getPatientOverview'])->name('dashboard.patient-overview');
 
         Route::resource('appointments', AppointmentController::class);
+        Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
 
         Route::middleware('role:admin')->group(function (): void {
             Route::resource('patients', PatientController::class)->except(['index', 'show']);
             Route::resource('doctors', DoctorController::class)->except(['index', 'show']);
             Route::resource('departments', DepartmentController::class)->except(['index', 'show']);
+
+            Route::get('/service-bookings', [ServiceBookingController::class, 'index'])->name('service-bookings.index');
+            Route::patch('/service-bookings/{serviceBooking}/status', [ServiceBookingController::class, 'updateStatus'])->name('service-bookings.status');
         });
 
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');

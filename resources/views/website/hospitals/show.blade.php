@@ -8,10 +8,10 @@
   <section id="about" class="about section">
     <div class="container">
       <div class="row gy-4 gx-5">
-        <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-6 position-relative align-self-start reveal" style="transition-delay: 200ms">
           <img src="{{ asset('images/' . $hospital->image) }}" class="img-fluid" alt="{{ $hospital->name }}" width="500">
         </div>
-        <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-lg-6 content reveal" style="transition-delay: 100ms">
           <h3>{{ $hospital->name }}</h3>
           <p>{{ $hospital->description }}</p>
           <ul>

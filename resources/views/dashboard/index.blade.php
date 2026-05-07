@@ -166,23 +166,23 @@
                   <h6 class="fw-bold mb-0">Patient Overview</h6>
                   <p class="text-muted mb-2" style="font-size:.72rem;">by Age Stages</p>
                 </div>
-                <div class="dropdown">
+                <div class="dropdown" id="patientOverviewWidget" data-endpoint="{{ route('dashboard.patient-overview') }}">
                   <button class="btn btn-dark btn-sm d-flex align-items-center gap-1 dropdown-toggle" id="overviewDropdown" data-bs-toggle="dropdown" style="font-size:.75rem;">
                     Current Snapshot
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size:.8rem;">
-                    <li><button class="dropdown-item" type="button" onclick="updateOverviewLabel('Current Snapshot')">Current Snapshot</button></li>
-                    <li><button class="dropdown-item" type="button" onclick="updateOverviewLabel('This Quarter')">This Quarter</button></li>
-                    <li><button class="dropdown-item" type="button" onclick="updateOverviewLabel('This Year')">This Year</button></li>
+                    <li><button class="dropdown-item" type="button" data-range="current" data-label="Current Snapshot">Current Snapshot</button></li>
+                    <li><button class="dropdown-item" type="button" data-range="quarter" data-label="This Quarter">This Quarter</button></li>
+                    <li><button class="dropdown-item" type="button" data-range="year" data-label="This Year">This Year</button></li>
                   </ul>
                 </div>
               </div>
               <div class="d-flex gap-3 mb-2">
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#1a2e4a;"></span> Child <strong class="ms-1">{{ $patientAgeGroups['child'] }}</strong></span>
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#3eb8b0;"></span> Adult <strong class="ms-1">{{ $patientAgeGroups['adult'] }}</strong></span>
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#b2e0f5;"></span> Elderly <strong class="ms-1">{{ $patientAgeGroups['elderly'] }}</strong></span>
+                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#1a2e4a;"></span> Child <strong class="ms-1" data-overview-type="child">{{ $patientAgeGroups['child'] }}</strong></span>
+                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#3eb8b0;"></span> Adult <strong class="ms-1" data-overview-type="adult">{{ $patientAgeGroups['adult'] }}</strong></span>
+                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#b2e0f5;"></span> Elderly <strong class="ms-1" data-overview-type="elderly">{{ $patientAgeGroups['elderly'] }}</strong></span>
               </div>
-              <div id="patientOverviewChart"></div>
+              <div id="patientOverviewChart" style="min-height:240px;max-height:280px;position:relative;"></div>
             </div>
           </div>
         </div>
@@ -199,8 +199,8 @@
                 </div>
               </div>
               <div class="d-flex gap-3 mb-2">
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#1a2e4a;"></span> Income</span>
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#3eb8b0;"></span> Expense</span>
+                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#1a2e4a;"></span> Confirmed</span>
+                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#3eb8b0;"></span> Pending</span>
               </div>
               <div id="revenueChart"></div>
             </div>
@@ -208,44 +208,56 @@
         </div>
       </div>
 
-      @if(auth()->user()->isAdmin())
       <div class="row g-3 mb-3">
-        <div class="col-lg-6">
+        <div class="col-lg-7">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-bold mb-0">Department</h6>
-                <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary border-0 p-0" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h text-muted" style="font-size:.7rem;"></i></button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size:.8rem;">
-                    <li><a class="dropdown-item" href="{{ route('departments.index') }}">View Departments</a></li>
-                    <li><a class="dropdown-item" href="{{ route('doctors.index') }}">Doctor Directory</a></li>
-                  </ul>
+                <div>
+                  <h6 class="fw-bold mb-0">Appointments This Week</h6>
+                  <p class="text-muted mb-0" style="font-size:.7rem;">Last 7 days</p>
                 </div>
+                <a href="{{ route('appointments.index') }}" class="text-primary small text-decoration-none">View All</a>
               </div>
-              @if ($departmentDistribution->isNotEmpty())
-                <div id="deptDonutChart"></div>
-                <div class="d-flex flex-column gap-2 mt-2">
-                  @foreach ($departmentDistribution as $department)
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span class="d-flex align-items-center gap-2" style="font-size:.75rem;">
-                        <span class="rounded-circle d-inline-block" style="width:9px;height:9px;background:{{ ['#1a2e4a', '#3eb8b0', '#b2e0f5', '#dee2e6'][$loop->index] ?? '#dee2e6' }};"></span>
-                        {{ $department->name }}
-                      </span>
-                      <span class="fw-semibold small">{{ $department->doctors_count }}</span>
-                    </div>
-                  @endforeach
-                </div>
+              <div id="appointmentsPerDayChart"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Status Distribution</h6>
+              </div>
+              @if (array_sum($statusDistribution) > 0)
+                <div id="statusDistributionChart"></div>
               @else
                 <div class="rounded-3 bg-light text-center py-5">
-                  <p class="text-muted small mb-0">No department distribution data is available yet.</p>
+                  <p class="text-muted small mb-0">No appointments yet.</p>
                 </div>
               @endif
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="col-lg-6">
+      @if(auth()->user()->isAdmin())
+      @if($stats['pending_service_bookings'] > 0)
+      <div class="alert border-0 shadow-sm d-flex align-items-center gap-3 mb-3" style="background:#eef5ff;border-radius:12px;">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background:#1a5fa8;">
+          <i class="fas fa-concierge-bell text-white"></i>
+        </span>
+        <div class="flex-grow-1">
+          <p class="fw-semibold mb-0" style="font-size:.85rem;">{{ $stats['pending_service_bookings'] }} Pending Service Booking{{ $stats['pending_service_bookings'] > 1 ? 's' : '' }}</p>
+          <p class="text-muted mb-0" style="font-size:.72rem;">Patient Care bookings awaiting admin review.</p>
+        </div>
+        <a href="{{ route('service-bookings.index', ['status' => 'pending']) }}" class="btn btn-dark btn-sm">Review</a>
+      </div>
+      @endif
+
+      <div class="row g-3 mb-3">
+
+        <div class="col-lg-12">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -272,6 +284,22 @@
       </div>
       @endif
 
+      @php
+        $pendingCount = collect($recentAppointments)->where('status', 'pending')->count();
+      @endphp
+      @if($pendingCount > 0)
+      <div class="alert border-0 shadow-sm d-flex align-items-center gap-3 mb-3" style="background:#fff8e1;border-radius:12px;">
+        <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background:#ffc107;">
+          <i class="fas fa-clock text-white"></i>
+        </span>
+        <div class="flex-grow-1">
+          <p class="fw-semibold mb-0" style="font-size:.85rem;">{{ $pendingCount }} Pending Appointment{{ $pendingCount > 1 ? 's' : '' }} Awaiting Action</p>
+          <p class="text-muted mb-0" style="font-size:.72rem;">Review and confirm or reject pending bookings from patients.</p>
+        </div>
+        <a href="{{ route('appointments.index', ['status' => 'pending']) }}" class="btn btn-dark btn-sm">Review Now</a>
+      </div>
+      @endif
+
       <div class="card border-0 shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -283,11 +311,13 @@
             <button class="btn btn-sm btn-outline-secondary border-0 p-1" type="button" disabled><i class="fas fa-chevron-left text-muted small"></i></button>
             <div class="d-flex align-items-center gap-1 flex-grow-1 overflow-auto pb-1">
               @foreach ($appointmentDateStrip as $date)
-                <div class="text-center px-2 py-1 rounded-2 {{ $date['is_today'] ? 'bg-dark text-white' : 'border bg-white' }}" style="min-width:56px;">
-                  <p class="mb-0 {{ $date['is_today'] ? 'text-white' : 'text-muted' }}" style="font-size:.65rem;">{{ $date['label'] }}</p>
-                  <p class="fw-semibold mb-0 small {{ $date['is_today'] ? 'text-white' : '' }}">{{ $date['day'] }}</p>
-                  <p class="mb-0 {{ $date['is_today'] ? 'text-white-50' : 'text-muted' }}" style="font-size:.58rem;">{{ $date['count'] }}</p>
-                </div>
+                <a href="{{ route('appointments.index', ['appointment_date' => $date['full_date']]) }}" class="text-decoration-none" style="color:inherit;">
+                  <div class="text-center px-2 py-1 rounded-2 {{ $date['is_today'] ? 'bg-dark text-white' : 'border bg-white' }}" style="min-width:56px;cursor:pointer;transition:transform .15s;">
+                    <p class="mb-0 {{ $date['is_today'] ? 'text-white' : 'text-muted' }}" style="font-size:.65rem;">{{ $date['label'] }}</p>
+                    <p class="fw-semibold mb-0 small {{ $date['is_today'] ? 'text-white' : '' }}">{{ $date['day'] }}</p>
+                    <p class="mb-0 {{ $date['is_today'] ? 'text-white-50' : 'text-muted' }}" style="font-size:.58rem;">{{ $date['count'] }}</p>
+                  </div>
+                </a>
               @endforeach
             </div>
             <button class="btn btn-sm btn-outline-secondary border-0 p-1" type="button" disabled><i class="fas fa-chevron-right text-muted small"></i></button>
@@ -330,6 +360,23 @@
                           @if(auth()->user()->isAdmin())
                           <li><a class="dropdown-item" href="{{ route('appointments.edit', $appointment) }}">Reschedule</a></li>
                           @endif
+                          @if($appointment->status === 'pending')
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            <form action="{{ route('appointments.status', $appointment) }}" method="POST">
+                              @csrf @method('PATCH')
+                              <input type="hidden" name="status" value="confirmed">
+                              <button type="submit" class="dropdown-item text-success"><i class="fas fa-check me-2"></i>Confirm</button>
+                            </form>
+                          </li>
+                          <li>
+                            <form action="{{ route('appointments.status', $appointment) }}" method="POST">
+                              @csrf @method('PATCH')
+                              <input type="hidden" name="status" value="cancelled">
+                              <button type="submit" class="dropdown-item text-danger"><i class="fas fa-times me-2"></i>Reject</button>
+                            </form>
+                          </li>
+                          @endif
                         </ul>
                       </div>
                     </td>
@@ -370,14 +417,17 @@
                     @foreach ($week as $day)
                       @php
                         $count = $miniCalendarCounts[$day->toDateString()] ?? 0;
+                        $dayUrl = route('appointments.index', ['appointment_date' => $day->toDateString()]);
                       @endphp
                       <td class="px-1 py-1">
-                        <div class="rounded-2 {{ $day->isToday() ? 'bg-dark text-white' : ($day->month !== $miniCalendarDate->month ? 'bg-light text-muted' : '') }}" style="min-height:40px;padding:.25rem;">
-                          <p class="fw-semibold mb-0" style="font-size:.68rem;">{{ $day->day }}</p>
-                          @if ($count > 0)
-                            <p class="mb-0 {{ $day->isToday() ? 'text-white-50' : 'text-primary' }}" style="font-size:.52rem;">{{ $count }}</p>
-                          @endif
-                        </div>
+                        <a href="{{ $dayUrl }}" class="d-block text-decoration-none" style="color:inherit;" title="{{ $count }} appointment{{ $count === 1 ? '' : 's' }} on {{ $day->format('M d') }}">
+                          <div class="rounded-2 {{ $day->isToday() ? 'bg-dark text-white' : ($day->month !== $miniCalendarDate->month ? 'bg-light text-muted' : '') }} mini-cal-cell" style="min-height:40px;padding:.25rem;cursor:pointer;transition:background .15s;">
+                            <p class="fw-semibold mb-0" style="font-size:.68rem;">{{ $day->day }}</p>
+                            @if ($count > 0)
+                              <p class="mb-0 {{ $day->isToday() ? 'text-white-50' : 'text-primary' }}" style="font-size:.52rem;">{{ $count }}</p>
+                            @endif
+                          </div>
+                        </a>
                       </td>
                     @endforeach
                   </tr>
@@ -431,15 +481,16 @@
     const revenueChart = new ApexCharts(document.querySelector('#revenueChart'), {
       chart: { type: 'line', height: 240, toolbar: { show: false } },
       series: [
-        { name: 'Income', data: revenueDatasets.week.income },
-        { name: 'Expense', data: revenueDatasets.week.expense },
+        { name: 'Confirmed', data: revenueDatasets.week.income },
+        { name: 'Pending', data: revenueDatasets.week.pending },
       ],
       xaxis: { categories: revenueDatasets.week.labels },
       colors: ['#1a2e4a', '#3eb8b0'],
       stroke: { curve: 'smooth', width: 3 },
       dataLabels: { enabled: false },
       legend: { show: false },
-      grid: { borderColor: '#f0f0f0' }
+      grid: { borderColor: '#f0f0f0' },
+      yaxis: { labels: { formatter: (v) => '$' + Number(v).toFixed(0) } }
     });
 
     revenueChart.render();
@@ -463,22 +514,106 @@
 
       document.querySelectorAll('#revenueToggle button').forEach((toggleButton) => {
         toggleButton.className = 'btn btn-outline-secondary';
+        toggleButton.style.fontSize = '.72rem';
+        toggleButton.style.padding = '3px 10px';
       });
 
       button.className = 'btn btn-dark';
+      button.style.fontSize = '.72rem';
+      button.style.padding = '3px 10px';
 
       revenueChart.updateOptions({
         xaxis: { categories: dataset.labels }
       });
 
       revenueChart.updateSeries([
-        { name: 'Income', data: dataset.income },
-        { name: 'Expense', data: dataset.expense }
+        { name: 'Confirmed', data: dataset.income },
+        { name: 'Pending', data: dataset.pending }
       ]);
     };
 
-    window.updateOverviewLabel = (label) => {
-      document.getElementById('overviewDropdown').textContent = label;
-    };
+    // Appointments per day (last 7 days) — real data
+    const perDayEl = document.querySelector('#appointmentsPerDayChart');
+    if (perDayEl) {
+      new ApexCharts(perDayEl, {
+        chart: { type: 'bar', height: 180, toolbar: { show: false }, sparkline: { enabled: false } },
+        plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+        series: [{ name: 'Appointments', data: @json($appointmentsPerDaySeries) }],
+        xaxis: { categories: @json($revenueLabels) },
+        colors: ['#3eb8b0'],
+        dataLabels: { enabled: false },
+        grid: { borderColor: '#f0f0f0' },
+        legend: { show: false }
+      }).render();
+    }
+
+    // Status distribution — real data
+    const statusEl = document.querySelector('#statusDistributionChart');
+    if (statusEl) {
+      new ApexCharts(statusEl, {
+        chart: { type: 'donut', height: 200, toolbar: { show: false } },
+        series: @json(array_values($statusDistribution)),
+        labels: ['Confirmed', 'Pending', 'Cancelled'],
+        colors: ['#0a8c6a', '#f0b429', '#c0392b'],
+        legend: { position: 'bottom', fontSize: '11px' },
+        dataLabels: { enabled: false },
+        stroke: { width: 0 }
+      }).render();
+    }
+
+    // --- Patient Overview: dynamic range switcher ---
+    (function () {
+      const widget = document.getElementById('patientOverviewWidget');
+      if (!widget) return;
+
+      const endpoint = widget.dataset.endpoint;
+      const labelEl = document.getElementById('overviewDropdown');
+      let inFlight = null;
+
+      const applyData = (data) => {
+        const child = Number(data.child) || 0;
+        const adult = Number(data.adult) || 0;
+        const elderly = Number(data.elderly) || 0;
+
+        widget.closest('.card').querySelectorAll('[data-overview-type]').forEach((el) => {
+          const type = el.dataset.overviewType;
+          el.textContent = { child, adult, elderly }[type] ?? 0;
+        });
+
+        // Guard against chart crash when all values are zero.
+        const series = (child + adult + elderly) === 0 ? [0, 0, 0] : [child, adult, elderly];
+        patientOverviewChart.updateSeries(series);
+      };
+
+      widget.querySelectorAll('[data-range]').forEach((button) => {
+        button.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const range = button.dataset.range;
+          const label = button.dataset.label;
+
+          labelEl.textContent = label;
+          labelEl.classList.add('disabled');
+
+          try {
+            if (inFlight) inFlight.abort();
+            inFlight = new AbortController();
+
+            const response = await fetch(endpoint + '?range=' + encodeURIComponent(range), {
+              headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'same-origin',
+              signal: inFlight.signal,
+            });
+
+            if (!response.ok) throw new Error('Request failed: ' + response.status);
+            const data = await response.json();
+            applyData(data);
+          } catch (err) {
+            if (err.name !== 'AbortError') console.error('Patient overview fetch failed:', err);
+          } finally {
+            labelEl.classList.remove('disabled');
+          }
+        });
+      });
+    })();
   </script>
 @endpush

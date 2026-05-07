@@ -7,18 +7,18 @@
   {{-- ═══ Hero Banner ═══ --}}
   <section class="dept-hero">
     <div class="container position-relative" style="z-index:2;">
-      <nav aria-label="breadcrumb" data-aos="fade-right" data-aos-delay="0">
+      <nav aria-label="breadcrumb" class="reveal right" style="transition-delay: 0ms">
         <ol class="dept-breadcrumb">
           <li><a href="{{ route('home') }}">Home</a></li>
           <li><a href="{{ route('website.departments') }}">Departments</a></li>
           <li class="active">{{ $department->name }}</li>
         </ol>
       </nav>
-      <h1 class="dept-hero-title" data-aos="fade-right" data-aos-delay="100">{{ $department->name }}</h1>
+      <h1 class="dept-hero-title reveal right" style="transition-delay: 100ms">{{ $department->name }}</h1>
       @if($department->description)
-        <p class="dept-hero-desc" data-aos="fade-right" data-aos-delay="200">{{ Str::limit($department->description, 200) }}</p>
+        <p class="dept-hero-desc reveal right" style="transition-delay: 200ms">{{ Str::limit($department->description, 200) }}</p>
       @endif
-      <div class="dept-hero-badges" data-aos="fade-right" data-aos-delay="300">
+      <div class="dept-hero-badges reveal right" style="transition-delay: 300ms">
         <span class="dept-hero-badge"><i class="bi bi-people-fill"></i> {{ $department->doctors->count() }} Doctor{{ $department->doctors->count() !== 1 ? 's' : '' }}</span>
         @if($department->services)
           <span class="dept-hero-badge"><i class="bi bi-clipboard2-check-fill"></i> {{ count($department->services) }} Service{{ count($department->services) !== 1 ? 's' : '' }}</span>
@@ -75,7 +75,7 @@
           </div>
 
           {{-- Desktop sidebar --}}
-          <div class="dept-sidebar-card d-none d-lg-block" data-aos="fade-right">
+          <div class="dept-sidebar-card d-none d-lg-block reveal right">
             <h5 class="dept-sidebar-title">
               <i class="bi bi-grid-fill me-2"></i>Departments
             </h5>
@@ -121,7 +121,7 @@
 
           {{-- About Card --}}
           @if($department->description)
-          <div class="dept-card" data-aos="fade-up">
+          <div class="dept-card reveal">
             <div class="dept-card-header">
               <i class="bi bi-info-circle-fill"></i>
               <h4>About {{ $department->name }}</h4>
@@ -139,7 +139,7 @@
 
           {{-- Services Grid --}}
           @if($department->services && count($department->services) > 0)
-          <div class="dept-card" data-aos="fade-up">
+          <div class="dept-card reveal">
             <div class="dept-card-header">
               <i class="bi bi-clipboard2-check-fill"></i>
               <h4>Our Services</h4>
@@ -147,7 +147,7 @@
             <div class="dept-card-body">
               <div class="row g-3">
                 @foreach($department->services as $index => $service)
-                <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ ($index % 4) * 80 }}">
+                <div class="col-md-6 reveal" style="transition-delay: {{ ($index % 4) * 80 }}ms">
                   <div class="dept-service-card">
                     <div class="dept-service-icon">
                       <i class="bi bi-check-circle-fill"></i>
@@ -162,7 +162,7 @@
           @endif
 
           {{-- Doctors Section --}}
-          <div class="dept-card" data-aos="fade-up">
+          <div class="dept-card reveal">
             <div class="dept-card-header">
               <i class="bi bi-people-fill"></i>
               <h4>Our Doctors</h4>
@@ -172,7 +172,7 @@
               @if($department->doctors->count() > 0)
               <div class="row g-4">
                 @foreach($department->doctors as $index => $doctor)
-                <div class="col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
+                <div class="col-md-6 col-xl-4 reveal" style="transition-delay: {{ ($index % 3) * 100 }}ms">
                   <div class="dept-doctor-card">
                     <div class="dept-doctor-img-wrap">
                       @if($doctor->avatar)
@@ -223,7 +223,7 @@
           </div>
 
           {{-- CTA Back --}}
-          <div class="text-center mt-4" data-aos="fade-up">
+          <div class="text-center mt-4 reveal">
             <a href="{{ route('website.departments') }}" class="dept-btn-outline" style="padding:12px 32px;">
               <i class="bi bi-arrow-left"></i> Back to All Departments
             </a>

@@ -5,12 +5,12 @@
 @section('content')
 
 <section class="section">
-  <div class="container section-title" data-aos="fade-up">
+  <div class="container section-title reveal">
     <h2>My Bookings</h2>
     <p>View and manage your appointments</p>
   </div>
 
-  <div class="container" data-aos="fade-up" data-aos-delay="100">
+  <div class="container reveal" style="transition-delay: 100ms">
 
     {{-- Session Messages --}}
     @if(session('status'))
@@ -27,11 +27,40 @@
       </div>
     @endif
 
-    {{-- User Info --}}
-    <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert" style="border-radius:12px;">
-      <i class="bi bi-person-check-fill fs-5"></i>
-      <span>Showing bookings for <strong>{{ auth()->user()->name }}</strong></span>
-    </div>
+    {{-- Phone Search for Guests --}}
+    @guest
+      <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card-body p-4">
+          <h5 class="mb-3"><i class="bi bi-search me-2"></i>Find Your Bookings</h5>
+          <p class="text-muted mb-3">Enter your phone number to view your appointments.</p>
+          <form action="{{ route('my-bookings') }}" method="GET" class="d-flex gap-2 flex-wrap">
+            <div class="flex-grow-1" style="min-width: 200px;">
+              <input type="tel"
+                     name="phone"
+                     class="form-control"
+                     placeholder="Enter your phone number"
+                     value="{{ old('phone', $phone ?? '') }}"
+                     style="border-radius: 10px;"
+                     required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="border-radius: 10px;">
+              <i class="bi bi-search me-1"></i> Find My Bookings
+            </button>
+          </form>
+          @error('phone')
+            <div class="text-danger small mt-2">{{ $message }}</div>
+          @enderror
+        </div>
+      </div>
+    @endguest
+
+    {{-- User Info for Authenticated Users --}}
+    @auth
+      <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert" style="border-radius:12px;">
+        <i class="bi bi-person-check-fill fs-5"></i>
+        <span>Showing bookings for <strong>{{ auth()->user()->name }}</strong></span>
+      </div>
+    @endauth
 
     {{-- Status Filter Buttons --}}
     @if($appointments instanceof \Illuminate\Pagination\LengthAwarePaginator && $appointments->total() > 0)
@@ -154,9 +183,11 @@
       </div>
 
       {{-- Pagination --}}
-      <div class="d-flex justify-content-center mt-5">
-        {{ $appointments->links() }}
+      @if($appointments->hasPages())
+      <div class="mt-5">
+        {{ $appointments->withQueryString()->links('vendor.pagination.medicare') }}
       </div>
+      @endif
 
     @else
       {{-- Empty State --}}
@@ -165,10 +196,24 @@
           <i class="bi bi-calendar-x display-1 text-muted"></i>
         </div>
         <h4 class="text-muted mb-2">No bookings found</h4>
-        <p class="text-muted mb-4">You don't have any appointments yet.</p>
-        <a href="{{ route('website.book') }}" class="btn btn-primary" style="border-radius: 25px;">
-          <i class="bi bi-calendar-plus me-2"></i> Book an Appointment
-        </a>
+        @guest
+          @if($searched ?? false)
+            <p class="text-muted mb-4">No appointments found for this phone number.</p>
+          @else
+            <p class="text-muted mb-4">Enter your phone number above to find your bookings.</p>
+          @endif
+        @else
+          <p class="text-muted mb-4">You don't have any appointments yet.</p>
+        @endguest
+        @auth
+          <a href="{{ route('website.book') }}" class="btn btn-primary" style="border-radius: 25px;">
+            <i class="bi bi-calendar-plus me-2"></i> Book an Appointment
+          </a>
+        @else
+          <a href="{{ route('login') }}" class="btn btn-primary" style="border-radius: 25px;">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Login to Book
+          </a>
+        @endauth
       </div>
     @endif
 

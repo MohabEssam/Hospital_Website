@@ -68,13 +68,13 @@
 
 <section class="bk-section section">
   <div class="container">
-    <div class="bk-title" data-aos="fade-up">
+    <div class="bk-title reveal">
       <h2>Book an Appointment</h2>
       <p>Fill in the details below to schedule your visit</p>
     </div>
 
     @if($errors->any())
-      <div class="bk-alert bk-alert-error" data-aos="fade-up">
+      <div class="bk-alert bk-alert-error reveal">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <div>@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>
       </div>
@@ -86,7 +86,7 @@
           @csrf
 
           {{-- Section 1: Select Doctor --}}
-          <div class="bk-card" data-aos="fade-up">
+          <div class="bk-card reveal">
             <div class="bk-card-head">
               <i class="bi bi-person-badge"></i>
               <div><h3>Select Doctor</h3><p>Choose department and doctor</p></div>
@@ -144,7 +144,7 @@
           </div>
 
           {{-- Section 2: Choose Appointment Slot --}}
-          <div class="bk-card" data-aos="fade-up" data-aos-delay="50">
+          <div class="bk-card reveal" style="transition-delay: 50ms">
             <div class="bk-card-head">
               <i class="bi bi-calendar3"></i>
               <div><h3>Choose an Appointment Slot</h3><p>Available slots from doctor's schedule</p></div>
@@ -184,7 +184,7 @@
           </div>
 
           {{-- Section 3: Patient Information --}}
-          <div class="bk-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="bk-card reveal" style="transition-delay: 100ms">
             <div class="bk-card-head">
               <i class="bi bi-person-vcard"></i>
               <div><h3>Patient Information</h3><p>Your details and reason for visiting</p></div>
@@ -221,7 +221,7 @@
           </div>
 
           {{-- Actions --}}
-          <div class="bk-actions" data-aos="fade-up" data-aos-delay="150">
+          <div class="bk-actions reveal" style="transition-delay: 150ms">
             <a href="{{ url()->previous() }}" class="bk-btn bk-btn-back"><i class="bi bi-arrow-left"></i> Back</a>
             <button type="button" class="bk-btn bk-btn-primary" id="btnReview">Review Booking <i class="bi bi-arrow-right"></i></button>
           </div>
@@ -256,7 +256,7 @@
 
       {{-- Sidebar --}}
       <div class="col-lg-4">
-        <div class="bk-sidebar" data-aos="fade-left">
+        <div class="bk-sidebar reveal left">
           <h5><i class="bi bi-receipt me-2"></i>Summary</h5>
           <div class="bk-side-row" id="sideDoc"><span>Doctor</span><strong>—</strong></div>
           <div class="bk-side-row" id="sideDept"><span>Department</span><strong>—</strong></div>

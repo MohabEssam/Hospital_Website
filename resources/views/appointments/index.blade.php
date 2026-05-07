@@ -29,14 +29,10 @@
       </div>
 
       <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <form method="GET" class="input-group input-group-sm" style="max-width:280px;">
-          <input type="hidden" name="status" value="{{ $filters['status'] ?? '' }}">
-          <input type="hidden" name="doctor_id" value="{{ $filters['doctor_id'] ?? '' }}">
-          <input type="hidden" name="department_id" value="{{ $filters['department_id'] ?? '' }}">
-          <input type="hidden" name="appointment_date" value="{{ $filters['appointment_date'] ?? '' }}">
+        <div class="input-group input-group-sm" style="max-width:280px;">
           <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
-          <input type="text" class="form-control border-start-0 shadow-none" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search name, doctor, treatment...">
-        </form>
+          <input type="text" class="form-control border-start-0 shadow-none" id="appointmentSearchInput" value="{{ $filters['search'] ?? '' }}" placeholder="Search name, doctor, treatment...">
+        </div>
 
         <div class="d-flex gap-2 flex-wrap">
           <div class="dropdown">
@@ -107,68 +103,8 @@
               <th class="text-muted fw-semibold small">Action</th>
             </tr>
           </thead>
-          <tbody>
-            @forelse ($appointments as $appointment)
-              @php
-                $statusClasses = [
-                    'confirmed' => 'background:#d1faf3;color:#0a8c6a;',
-                    'pending' => 'background:#fff3cd;color:#856404;',
-                    'cancelled' => 'background:#fdecea;color:#c0392b;',
-                ];
-              @endphp
-              <tr>
-                <td>
-                  <input type="checkbox" class="form-check-input appointment-row-check" value="{{ $appointment->id }}">
-                </td>
-                <td class="small fw-medium">{{ $appointment->patient?->name }}</td>
-                <td class="text-muted small">{{ $appointment->appointment_date?->format('Y-m-d') }}</td>
-                <td class="text-muted small">{{ $appointment->start_time }} - {{ $appointment->end_time }}</td>
-                <td class="small">{{ $appointment->doctor?->name }}</td>
-                <td class="small">{{ $appointment->department?->name ?? '-' }}</td>
-                <td class="small">{{ $appointment->treatment }}</td>
-                <td><span class="badge px-3 py-2" style="{{ $statusClasses[$appointment->status] ?? 'background:#e9ecef;color:#495057;' }}">{{ ucfirst($appointment->status) }}</span></td>
-                <td>
-                  <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary border-0 p-1" data-bs-toggle="dropdown">
-                      <i class="fas fa-ellipsis-h text-muted" style="font-size:.7rem;"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="font-size:.8rem;">
-                      <li>
-                        <a class="dropdown-item" href="{{ route('appointments.show', $appointment) }}">
-                          <i class="fas fa-eye me-2 text-muted"></i>Open
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="{{ route('appointments.edit', $appointment) }}">
-                          <i class="fas fa-calendar-alt me-2 text-muted"></i>Reschedule
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="{{ route('doctors.show', $appointment->doctor) }}">
-                          <i class="fas fa-user-md me-2 text-muted"></i>View Doctor
-                        </a>
-                      </li>
-                      @if(auth()->user()->isAdmin())
-                      <li><hr class="dropdown-divider"></li>
-                      <li>
-                        <form action="{{ route('appointments.destroy', $appointment) }}" method="POST" onsubmit="return confirm('Delete this appointment?')">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="dropdown-item text-danger">
-                            <i class="fas fa-trash me-2"></i>Delete
-                          </button>
-                        </form>
-                      </li>
-                      @endif
-                    </ul>
-                  </div>
-                </td>
-              </tr>
-            @empty
-              <tr>
-                <td colspan="9" class="text-center text-muted py-4 small">No appointments found.</td>
-              </tr>
-            @endforelse
+          <tbody id="appointments-tbody">
+            @include('appointments._table_rows', ['appointments' => $appointments])
           </tbody>
         </table>
       </div>
@@ -305,6 +241,63 @@
       @if (old('quick_form') === 'appointment' && $errors->any())
         new bootstrap.Modal(document.getElementById('addAppointmentModal')).show();
       @endif
+    })();
+
+    // ── AJAX Live Search ─────────────────────────────────────────
+    (() => {
+      const input = document.getElementById('appointmentSearchInput');
+      const tbody = document.getElementById('appointments-tbody');
+      if (!input || !tbody) return;
+
+      const endpoint = "{{ route('appointments.index') }}";
+      let debounceTimer;
+      let abortController;
+
+      function buildParams(term) {
+        const params = new URLSearchParams(window.location.search);
+        if (term) {
+          params.set('search', term);
+        } else {
+          params.delete('search');
+        }
+        params.delete('page');
+        return params.toString();
+      }
+
+      function fetchAppointments(term) {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
+
+        tbody.style.opacity = '0.5';
+
+        const url = endpoint + '?' + buildParams(term);
+
+        fetch(url, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+          signal: abortController.signal
+        })
+        .then(res => res.json())
+        .then(data => {
+          tbody.innerHTML = data.html;
+          tbody.style.opacity = '1';
+        })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            tbody.style.opacity = '1';
+          }
+        });
+      }
+
+      input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          fetchAppointments(input.value.trim());
+        }, 300);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') e.preventDefault();
+      });
     })();
   </script>
 @endpush

@@ -33,7 +33,7 @@
   <div class="container">
 
     @if(session('status'))
-    <div class="bs-card" data-aos="fade-up">
+    <div class="bs-card reveal">
       <div class="bs-header">
         @php
           $statusClass = match($appointment->status) {
@@ -108,7 +108,7 @@
     </div>
     @else
     {{-- Direct access (no flash) --}}
-    <div class="bs-card" data-aos="fade-up">
+    <div class="bs-card reveal">
       <div class="bs-header">
         @php
           $statusClass = match($appointment->status) {

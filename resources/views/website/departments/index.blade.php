@@ -7,7 +7,7 @@
   {{-- Section Header --}}
   <section class="dept-section-header">
     <div class="container position-relative" style="z-index:2;">
-      <div class="text-center" data-aos="fade-up">
+      <div class="text-center reveal">
         <h2 class="dept-section-title">Our Departments</h2>
         <p class="dept-section-subtitle">Comprehensive medical specialties for your care</p>
         <div class="dept-section-divider"></div>
@@ -17,60 +17,28 @@
 
   <section class="dept-section-content">
     <div class="container">
-      {{-- Search & Filters Toolbar --}}
-      <div class="dept-toolbar" data-aos="fade-up" data-aos-delay="100">
-        <div class="dept-search">
-          <i class="bi bi-search"></i>
-          <input type="text" placeholder="Search departments..." aria-label="Search departments">
-        </div>
-        <div class="dept-filters">
-          <button class="dept-filter active">All</button>
-          <button class="dept-filter">Active</button>
-          <button class="dept-filter">Popular</button>
+      {{-- Search Toolbar --}}
+      <div class="dept-toolbar reveal" style="transition-delay: 100ms">
+        <div class="dept-search" role="search">
+          <span class="dept-search-submit" aria-hidden="true">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="search"
+            id="dept-live-search"
+            value="{{ $filters['search'] ?? '' }}"
+            placeholder="Search by department, specialty, or keyword..."
+            aria-label="Search departments"
+            autocomplete="off">
+          <span class="dept-search-clear" id="dept-search-clear" aria-label="Clear search" style="display:none">
+            <i class="bi bi-x-circle-fill"></i>
+          </span>
+          <span class="dept-search-spinner" id="dept-spinner" aria-hidden="true"></span>
         </div>
       </div>
 
-      <div class="row g-4">
-        @forelse($departments as $index => $department)
-        <div class="col-lg-4 col-md-6 col-12" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}">
-          <div class="dept-card">
-            <a href="{{ route('website.departments.show', $department) }}" class="dept-card-link">
-              <div class="dept-card-image">
-                @if($department->hero_image)
-                  <img src="{{ asset('storage/' . $department->hero_image) }}" alt="{{ $department->name }}">
-                @else
-                  <img src="{{ asset('website-assets/img/departments/default.jpg') }}" alt="{{ $department->name }}">
-                @endif
-                <div class="dept-card-overlay"></div>
-                <div class="dept-card-icon">
-                  @if($department->icon)
-                    <img src="{{ asset('storage/' . $department->icon) }}" alt="">
-                  @else
-                    <i class="bi bi-hospital"></i>
-                  @endif
-                </div>
-              </div>
-              <div class="dept-card-body">
-                <h5 class="dept-card-title">{{ $department->name }}</h5>
-                <div class="dept-card-meta">
-                  <span class="dept-card-count"><i class="bi bi-people-fill"></i> {{ $department->doctors_count }} Doctor{{ $department->doctors_count !== 1 ? 's' : '' }}</span>
-                </div>
-                <p class="dept-card-desc">{{ Str::limit($department->description, 110) }}</p>
-                <span class="dept-card-cta">
-                  Explore Department <i class="bi bi-arrow-right"></i>
-                </span>
-              </div>
-            </a>
-          </div>
-        </div>
-        @empty
-        <div class="col-12 text-center py-5" data-aos="fade-up">
-          <div class="dept-empty-state">
-            <i class="bi bi-building"></i>
-            <p>No departments available at the moment.</p>
-          </div>
-        </div>
-        @endforelse
+      <div class="row g-4" id="dept-grid">
+        @include('website.departments._grid', ['departments' => $departments])
       </div>
     </div>
   </section>
@@ -268,14 +236,6 @@
   min-width: 260px;
   max-width: 400px;
 }
-.dept-search i {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af;
-  font-size: 16px;
-}
 .dept-search input {
   width: 100%;
   padding: 12px 16px 12px 44px;
@@ -295,31 +255,72 @@
 .dept-search input::placeholder {
   color: #9ca3af;
 }
-.dept-filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.dept-search input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
-.dept-filter {
-  padding: 8px 18px;
-  border-radius: 99px;
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #6b7280;
+
+/* Search icon */
+.dept-search-submit {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  color: #9ca3af;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Clear (×) button */
+.dept-search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: color 0.2s ease;
 }
-.dept-filter:hover {
-  border-color: #3f4047;
+.dept-search-clear:hover {
   color: #3f4047;
 }
-.dept-filter.active {
-  background: #3f4047;
-  color: #fff;
-  border-color: #3f4047;
+
+/* Loading spinner */
+.dept-search-spinner {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #3f4047;
+  border-radius: 50%;
+  animation: dept-spin 0.6s linear infinite;
+  display: none;
+}
+.dept-search-spinner.active {
+  display: block;
+}
+@keyframes dept-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Loading state on the grid */
+#dept-grid.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 /* Card Meta */
@@ -370,9 +371,6 @@
   .dept-search {
     max-width: 100%;
   }
-  .dept-filters {
-    justify-content: center;
-  }
   .dept-card-image {
     height: 180px;
   }
@@ -388,4 +386,81 @@
   }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+(function () {
+  'use strict';
+
+  var input   = document.getElementById('dept-live-search');
+  var grid    = document.getElementById('dept-grid');
+  var spinner = document.getElementById('dept-spinner');
+  var clearBtn = document.getElementById('dept-search-clear');
+  if (!input || !grid) return;
+
+  var endpoint = "{{ route('website.departments') }}";
+  var debounceTimer;
+  var abortController;
+
+  function toggleSpinner(show) {
+    if (spinner) spinner.classList.toggle('active', show);
+  }
+
+  function toggleClear(show) {
+    if (clearBtn) clearBtn.style.display = show ? 'inline-flex' : 'none';
+  }
+
+  function fetchDepartments(term) {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
+
+    grid.classList.add('is-loading');
+    toggleSpinner(true);
+
+    var url = endpoint + (term ? '?search=' + encodeURIComponent(term) : '');
+
+    fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      signal: abortController.signal
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      grid.innerHTML = data.html;
+      grid.classList.remove('is-loading');
+      toggleSpinner(false);
+    })
+    .catch(function (err) {
+      if (err.name !== 'AbortError') {
+        grid.classList.remove('is-loading');
+        toggleSpinner(false);
+      }
+    });
+  }
+
+  input.addEventListener('input', function () {
+    var term = input.value.trim();
+    toggleClear(term.length > 0);
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      fetchDepartments(term);
+    }, 350);
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      input.value = '';
+      toggleClear(false);
+      fetchDepartments('');
+      input.focus();
+    });
+  }
+
+  // Prevent accidental form submission if wrapped in a form
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') e.preventDefault();
+  });
+})();
+</script>
 @endpush

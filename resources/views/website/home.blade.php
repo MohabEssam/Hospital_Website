@@ -40,10 +40,10 @@
     <section id="about" class="about section">
       <div class="container">
         <div class="row gy-4 gx-5">
-          <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-lg-6 position-relative align-self-start reveal" style="transition-delay: 200ms">
             <img src="{{ asset('website-assets/img/about.jpg') }}" class="img-fluid" alt="About Medicare">
           </div>
-          <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
+          <div class="col-lg-6 content reveal" style="transition-delay: 100ms">
             <h3>About Medicare Hospital</h3>
             <p>Medicare is a leading healthcare institution dedicated to providing exceptional medical services
                across a wide range of specialties. Our team of experienced doctors and state-of-the-art facilities
@@ -77,30 +77,78 @@
     </section>
 
     <!-- Stats Section -->
-    <section id="stats" class="stats section light-background">
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-        <div class="row gy-4 justify-content-center">
-          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
-            <i class="fa-solid fa-hospital"></i>
-            <div class="stats-item">
-              <span data-purecounter-start="0" data-purecounter-end="{{ $stats['departments'] }}" data-purecounter-duration="1" class="purecounter"></span>
-              <p>Departments</p>
+    <section id="stats" class="stats section light-background stats-bg">
+      <div class="stats-overlay">
+        <div class="container reveal" style="transition-delay: 100ms">
+          <div class="row gy-4 justify-content-center">
+            <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+              <i class="fa-solid fa-hospital"></i>
+              <div class="stats-item">
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['departments'] }}" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Departments</p>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+              <i class="fa-solid fa-user-doctor"></i>
+              <div class="stats-item">
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['doctors'] }}" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Doctors</p>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+              <i class="fa-solid fa-users"></i>
+              <div class="stats-item">
+                <span data-purecounter-start="0" data-purecounter-end="{{ $stats['patients'] }}" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Patients Served</p>
+              </div>
             </div>
           </div>
-          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
-            <i class="fa-solid fa-user-doctor"></i>
-            <div class="stats-item">
-              <span data-purecounter-start="0" data-purecounter-end="{{ $stats['doctors'] }}" data-purecounter-duration="1" class="purecounter"></span>
-              <p>Doctors</p>
-            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Medical Center Services Section -->
+    <section id="services" class="mcs-section">
+      <div class="container">
+        <div class="mcs-heading">
+          <h2 class="mcs-title">Our Medical Center Services</h2>
+          <div class="mcs-dots">
+            <span class="mcs-dot"></span>
+            <span class="mcs-dot active"></span>
+            <span class="mcs-dot"></span>
           </div>
-          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
-            <i class="fa-solid fa-users"></i>
-            <div class="stats-item">
-              <span data-purecounter-start="0" data-purecounter-end="{{ $stats['patients'] }}" data-purecounter-duration="1" class="purecounter"></span>
-              <p>Patients Served</p>
+        </div>
+
+        <div class="mcs-track-wrapper">
+          <button class="mcs-arrow mcs-arrow-left" aria-label="Previous services">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <div class="mcs-track">
+            @foreach($patientCareServices as $pcService)
+            <div class="mcs-card">
+              <div class="mcs-card-img">
+                @if($pcService->image)
+                  <img src="{{ asset($pcService->image) }}" alt="{{ $pcService->name }}">
+                @else
+                  <div class="mcs-card-placeholder">
+                    <i class="{{ $pcService->icon_class ?? 'bi bi-heart-pulse' }}"></i>
+                  </div>
+                @endif
+              </div>
+              <h5 class="mcs-card-name">{{ $pcService->name }}</h5>
+              <p class="mcs-card-desc">{{ Str::limit($pcService->description, 100) }}</p>
             </div>
+            @endforeach
           </div>
+
+          <button class="mcs-arrow mcs-arrow-right" aria-label="Next services">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="text-center mt-4">
+          <a href="{{ route('website.patient-care') }}" class="mcs-readmore-btn">Read More</a>
         </div>
       </div>
     </section>
@@ -109,11 +157,11 @@
     <section id="departments" class="homepage-depts-section">
       <div class="homepage-depts-wrapper">
         {{-- Left image --}}
-        <div class="homepage-depts-image" data-aos="fade-right">
+        <div class="homepage-depts-image reveal right">
           <img src="{{ asset('assets/images/Department/imagehome.jpg') }}" alt="Our Departments">
         </div>
         {{-- Right grid --}}
-        <div class="homepage-depts-grid" data-aos="fade-up">
+        <div class="homepage-depts-grid reveal">
           @foreach($departments as $index => $department)
             <a href="{{ route('website.departments.show', $department) }}" class="homepage-dept-cell">
               <div class="homepage-dept-icon">
@@ -132,12 +180,12 @@
 
     <!-- Doctors Section -->
     <section id="doctors" class="doctors section">
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title reveal">
         <h2>Our Doctors</h2>
         <p>Meet trusted specialists focused on precise, compassionate care</p>
       </div>
       <div class="container">
-        <div class="doctor-tools" data-aos="fade-up" data-aos-delay="50">
+        <div class="doctor-tools reveal" style="transition-delay: 50ms">
           <label class="doctor-search">
             <i class="bi bi-search" aria-hidden="true"></i>
             <span class="visually-hidden">Search doctors</span>
@@ -157,9 +205,13 @@
 
         <div class="row g-4 doctor-card-grid" data-doctor-grid>
           @foreach($doctors as $doctor)
-          <div class="col-md-6 col-xl-4 doctor-card-col" data-aos="fade-up" data-aos-delay="{{ 80 + ($loop->index * 80) }}">
-            @include('website.doctors._card', ['doctor' => $doctor, 'featured' => $loop->first])
-          </div>
+            @php $isExtra = $loop->index >= 6; @endphp
+            <div class="col-md-6 col-xl-4 doctor-card-col reveal {{ $isExtra ? 'active' : '' }}"
+                 style="transition-delay: {{ 80 + (($loop->index % 6) * 80) }}ms"
+                 data-doctor-default="{{ $isExtra ? 'extra' : 'visible' }}"
+                 @if($isExtra) hidden @endif>
+              @include('website.doctors._card', ['doctor' => $doctor, 'featured' => $loop->first && ! $isExtra])
+            </div>
           @endforeach
         </div>
 
@@ -175,12 +227,12 @@
 
     <!-- FAQ Section -->
     <section id="faq" class="faq section light-background">
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title reveal">
         <h2>Frequently Asked Questions</h2>
       </div>
       <div class="container">
         <div class="row justify-content-center">
-          <div class="col-lg-10" data-aos="fade-up" data-aos-delay="100">
+          <div class="col-lg-10 reveal" style="transition-delay: 100ms">
             <div class="faq-container">
               <div class="faq-item faq-active">
                 <h3>How do I book an appointment?</h3>
@@ -221,13 +273,13 @@
 
     <!-- Contact Section -->
     <section id="contact" class="contact section">
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title reveal">
         <h2>Contact Us</h2>
       </div>
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container reveal" style="transition-delay: 100ms">
         <div class="row gy-4">
           <div class="col-md-4">
-            <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="300">
+            <div class="info-item d-flex reveal" style="transition-delay: 300ms">
               <i class="bi bi-geo-alt flex-shrink-0"></i>
               <div>
                 <h3>Location</h3>
@@ -236,7 +288,7 @@
             </div>
           </div>
           <div class="col-md-4">
-            <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="400">
+            <div class="info-item d-flex reveal" style="transition-delay: 400ms">
               <i class="bi bi-telephone flex-shrink-0"></i>
               <div>
                 <h3>Call Us</h3>
@@ -245,7 +297,7 @@
             </div>
           </div>
           <div class="col-md-4">
-            <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="500">
+            <div class="info-item d-flex reveal" style="transition-delay: 500ms">
               <i class="bi bi-envelope flex-shrink-0"></i>
               <div>
                 <h3>Email Us</h3>

@@ -17,8 +17,13 @@
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.index', 'doctors.show', 'doctors.create', 'doctors.edit') ? 'active' : '' }}" href="{{ route('doctors.index') }}"><span><i class="fas fa-user-md"></i></span><span class="hide-menu">Doctors</span></a></li>
 @if(auth()->user()?->isAdmin())
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}"><span><i class="fas fa-building"></i></span><span class="hide-menu">Departments</span></a></li>
+<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('service-bookings.*') ? 'active' : '' }}" href="{{ route('service-bookings.index') }}"><span><i class="fas fa-concierge-bell"></i></span><span class="hide-menu">Service Bookings</span></a></li>
 @endif
-<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.schedule') ? 'active' : '' }}" href="{{ auth()->user()->doctorProfile ? route('doctors.schedule', auth()->user()->doctorProfile) : route('doctors.index') }}"><span><i class="fas fa-calendar-day"></i></span><span class="hide-menu">Doctors' Schedule</span></a></li>
+@if(auth()->user()?->isDoctor() && auth()->user()->doctorProfile)
+<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.schedule') ? 'active' : '' }}" href="{{ route('doctors.schedule', auth()->user()->doctorProfile) }}"><span><i class="fas fa-calendar-day"></i></span><span class="hide-menu">My Schedule</span></a></li>
+@elseif(auth()->user()?->isAdmin())
+<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.schedule') ? 'active' : '' }}" href="{{ route('doctors.index') }}"><span><i class="fas fa-calendar-day"></i></span><span class="hide-menu">Doctors' Schedule</span></a></li>
+@endif
 
 @if(auth()->user()?->isAdmin())
 <li class="nav-small-cap"><i class="ti ti-dots nav-small-cap-icon fs-4"></i><span class="hide-menu">AUTH</span></li>
