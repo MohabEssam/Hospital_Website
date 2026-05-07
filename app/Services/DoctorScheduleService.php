@@ -71,6 +71,41 @@ class DoctorScheduleService
             ->exists();
     }
 
+    /**
+     * Check if the requested appointment window fits entirely inside any
+     * available weekly schedule block for that doctor on that weekday.
+     * Returns true if doctor has no schedule defined (fallback: allow).
+     */
+    public function rangeWithinSchedule(Doctor $doctor, string $date, string $startTime, string $endTime): bool
+    {
+        $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+
+        $schedules = $doctor->schedules()
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_available', true)
+            ->get();
+
+        // If no weekly schedule is defined at all, don't block (backward compat).
+        if ($schedules->isEmpty()) {
+            return ! $doctor->schedules()->exists();
+        }
+
+        $requestedStart = Carbon::createFromFormat('H:i', $startTime);
+        $requestedEnd = Carbon::createFromFormat('H:i', $endTime);
+
+        foreach ($schedules as $schedule) {
+            $windowStart = Carbon::parse($schedule->start_time);
+            $windowEnd = Carbon::parse($schedule->end_time);
+
+            if ($requestedStart->greaterThanOrEqualTo($windowStart)
+                && $requestedEnd->lessThanOrEqualTo($windowEnd)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function seedDefaultSchedule(Doctor $doctor): void
     {
         if ($doctor->schedules()->exists()) {

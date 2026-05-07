@@ -28,11 +28,31 @@ class BookingController extends Controller
     public function myBookings(Request $request): View
     {
         $statusFilter = $request->input('status', 'all');
-        $patientProfile = $request->user()->patientProfile;
+        $phone = $request->input('phone', session('phone'));
+        $searched = false;
 
-        $query = $patientProfile
-            ? Appointment::where('patient_id', $patientProfile->getKey())
-            : Appointment::whereRaw('1 = 0');
+        // Build query based on authentication status
+        if ($request->user()) {
+            // Authenticated user - fetch by patient_id
+            $patientProfile = $request->user()->patientProfile;
+            $query = $patientProfile
+                ? Appointment::where('patient_id', $patientProfile->getKey())
+                : Appointment::whereRaw('1 = 0');
+        } else {
+            // Guest user - fetch by phone number
+            if ($request->filled('phone')) {
+                $request->validate([
+                    'phone' => ['required', 'string', 'min:7', 'max:20'],
+                ]);
+                session(['phone' => $request->input('phone')]);
+                $phone = $request->input('phone');
+                $searched = true;
+            }
+
+            $query = $phone
+                ? Appointment::where('phone_number', $phone)
+                : Appointment::whereRaw('1 = 0');
+        }
 
         // Eager load doctor relationship to prevent N+1
         $query->with(['doctor.department']);
@@ -51,6 +71,8 @@ class BookingController extends Controller
         return view('website.bookings.index', [
             'appointments' => $appointments,
             'statusFilter' => $statusFilter,
+            'phone' => $phone,
+            'searched' => $searched,
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
+use App\Mail\AppointmentApprovedMail;
 use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
@@ -11,15 +12,19 @@ use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class AppointmentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $baseQuery = $this->applyFilters(
             $this->visibleAppointmentsQuery($request->user()),
@@ -37,6 +42,13 @@ class AppointmentController extends Controller
             ->orderBy('start_time')
             ->paginate(10)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html'  => view('appointments._table_rows', ['appointments' => $appointments])->render(),
+                'count' => $appointments->total(),
+            ]);
+        }
 
         return view('appointments.index', [
             'appointments' => $appointments,
@@ -114,9 +126,18 @@ class AppointmentController extends Controller
     {
         abort_unless($this->canAccess($appointment, $request->user()), 403);
 
+        $previousStatus = $appointment->status;
+
         $appointment->update(
             $this->preparePayload($request->validated(), $request->user()),
         );
+
+        if (
+            $appointment->status === Appointment::STATUS_CONFIRMED
+            && $previousStatus !== Appointment::STATUS_CONFIRMED
+        ) {
+            $this->dispatchConfirmationEmail($appointment);
+        }
 
         return redirect()
             ->route('appointments.show', $appointment)
@@ -135,6 +156,81 @@ class AppointmentController extends Controller
         return redirect()
             ->route('appointments.index')
             ->with('status', 'Appointment deleted successfully.');
+    }
+
+    /**
+     * Quick status update (confirm / cancel) for doctors and admins.
+     */
+    public function updateStatus(Request $request, Appointment $appointment): RedirectResponse
+    {
+        abort_unless($this->canAccess($appointment, $request->user()), 403);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:confirmed,cancelled'],
+        ]);
+
+        $previousStatus = $appointment->status;
+        $appointment->update(['status' => $validated['status']]);
+
+        if (
+            $validated['status'] === Appointment::STATUS_CONFIRMED
+            && $previousStatus !== Appointment::STATUS_CONFIRMED
+        ) {
+            $this->dispatchConfirmationEmail($appointment);
+        }
+
+        $label = $validated['status'] === Appointment::STATUS_CONFIRMED ? 'confirmed' : 'cancelled';
+
+        return redirect()
+            ->back()
+            ->with('status', "Appointment {$label} successfully.");
+    }
+
+    /**
+     * Send the confirmation email to the patient — guaranteed once per appointment.
+     * Uses the confirmation_email_sent_at timestamp as a lock, so re-confirming the
+     * same appointment never produces duplicates. Failures are logged, never thrown.
+     */
+    private function dispatchConfirmationEmail(Appointment $appointment): void
+    {
+        $appointment->loadMissing(['patient', 'doctor']);
+
+        // Idempotency guard — already sent before.
+        if ($appointment->confirmation_email_sent_at !== null) {
+            return;
+        }
+
+        $email = $appointment->patient?->email
+            ?? $appointment->patient?->user?->email;
+
+        if (blank($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Log::warning('Appointment confirmation email skipped: patient has no valid email.', [
+                'appointment_id' => $appointment->id,
+                'patient_id' => $appointment->patient_id,
+            ]);
+
+            return;
+        }
+
+        try {
+            Mail::to($email)->send(new AppointmentApprovedMail($appointment));
+
+            $appointment->forceFill([
+                'confirmation_email_sent_at' => now(),
+            ])->save();
+
+            Log::info('Appointment confirmation email dispatched.', [
+                'appointment_id' => $appointment->id,
+                'recipient' => $email,
+            ]);
+        } catch (Throwable $exception) {
+            // Don't bubble — the appointment is already confirmed; only mail failed.
+            Log::error('Failed to dispatch appointment confirmation email.', [
+                'appointment_id' => $appointment->id,
+                'recipient' => $email,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function visibleAppointmentsQuery(User $user): Builder
@@ -167,7 +263,8 @@ class AppointmentController extends Controller
                     $nested
                         ->where('treatment', 'like', "%{$term}%")
                         ->orWhereHas('patient', fn (Builder $patientQuery) => $patientQuery->where('name', 'like', "%{$term}%"))
-                        ->orWhereHas('doctor', fn (Builder $doctorQuery) => $doctorQuery->where('name', 'like', "%{$term}%"));
+                        ->orWhereHas('doctor', fn (Builder $doctorQuery) => $doctorQuery->where('name', 'like', "%{$term}%"))
+                        ->orWhereHas('department', fn (Builder $deptQuery) => $deptQuery->where('name', 'like', "%{$term}%"));
                 }),
             )
             ->when(

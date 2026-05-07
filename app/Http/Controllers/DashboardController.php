@@ -6,9 +6,11 @@ use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\ServiceBooking;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -21,42 +23,58 @@ class DashboardController extends Controller
         $appointmentsQuery = $this->visibleAppointmentsQuery($user);
         $patientsQuery = $this->visiblePatientsQuery($user);
 
+        // Revenue/income excludes cancelled appointments. No fake expense figure.
+        $nonCancelled = fn (Builder $q): Builder => $q->where('status', '!=', Appointment::STATUS_CANCELLED);
+
         $stats = [
             'patients' => (clone $patientsQuery)->count(),
-            'doctors' => Doctor::query()->count(),
+            'doctors' => $user->isAdmin() ? Doctor::query()->count() : 1,
             'appointments' => (clone $appointmentsQuery)->count(),
-            'available_doctors' => Doctor::query()
-                ->where('availability_status', Doctor::STATUS_AVAILABLE)
-                ->count(),
-            'departments' => Department::query()->count(),
+            'available_doctors' => $user->isAdmin()
+                ? Doctor::query()->where('availability_status', Doctor::STATUS_AVAILABLE)->count()
+                : (int) ($user->doctorProfile?->isAvailable() ?? false),
+            'departments' => $user->isAdmin() ? Department::query()->count() : 0,
             'patients_this_month' => (clone $patientsQuery)
                 ->whereBetween('created_at', [today()->startOfMonth(), today()->endOfMonth()])
                 ->count(),
             'appointments_today' => (clone $appointmentsQuery)
                 ->whereDate('appointment_date', today())
                 ->count(),
+            'pending_appointments' => (clone $appointmentsQuery)
+                ->where('status', Appointment::STATUS_PENDING)
+                ->count(),
+            'pending_service_bookings' => $user->isAdmin()
+                ? ServiceBooking::query()->where('status', ServiceBooking::STATUS_PENDING)->count()
+                : 0,
         ];
 
+        // --- Revenue (real, confirmed/pending only) ---
         $chartLabels = collect(range(0, 6))
             ->map(fn (int $offset) => today()->subDays(6 - $offset))
             ->values();
 
         $incomeSeries = $chartLabels
             ->map(fn ($date) => (float) (clone $appointmentsQuery)
+                ->tap($nonCancelled)
                 ->whereDate('appointment_date', $date)
                 ->sum('fee'))
             ->all();
 
-        $expenseSeries = collect($incomeSeries)
-            ->map(fn (float $value) => round($value * 0.38, 2))
+        // "Pending revenue" = fee of bookings not yet confirmed (real, not fabricated)
+        $pendingSeries = $chartLabels
+            ->map(fn ($date) => (float) (clone $appointmentsQuery)
+                ->where('status', Appointment::STATUS_PENDING)
+                ->whereDate('appointment_date', $date)
+                ->sum('fee'))
             ->all();
 
         $monthlyRevenuePeriods = collect(range(0, 3))
             ->map(fn (int $offset) => today()->copy()->startOfWeek()->subWeeks(3 - $offset));
 
         $monthlyIncomeSeries = $monthlyRevenuePeriods
-            ->map(function ($startOfWeek) use ($appointmentsQuery): float {
+            ->map(function ($startOfWeek) use ($appointmentsQuery, $nonCancelled): float {
                 return (float) (clone $appointmentsQuery)
+                    ->tap($nonCancelled)
                     ->whereBetween('appointment_date', [
                         $startOfWeek->copy()->toDateString(),
                         $startOfWeek->copy()->endOfWeek()->toDateString(),
@@ -65,16 +83,25 @@ class DashboardController extends Controller
             })
             ->all();
 
-        $monthlyExpenseSeries = collect($monthlyIncomeSeries)
-            ->map(fn (float $value) => round($value * 0.38, 2))
+        $monthlyPendingSeries = $monthlyRevenuePeriods
+            ->map(function ($startOfWeek) use ($appointmentsQuery): float {
+                return (float) (clone $appointmentsQuery)
+                    ->where('status', Appointment::STATUS_PENDING)
+                    ->whereBetween('appointment_date', [
+                        $startOfWeek->copy()->toDateString(),
+                        $startOfWeek->copy()->endOfWeek()->toDateString(),
+                    ])
+                    ->sum('fee');
+            })
             ->all();
 
         $yearlyRevenuePeriods = collect(range(0, 5))
             ->map(fn (int $offset) => today()->copy()->startOfMonth()->subMonths(5 - $offset));
 
         $yearlyIncomeSeries = $yearlyRevenuePeriods
-            ->map(function ($month) use ($appointmentsQuery): float {
+            ->map(function ($month) use ($appointmentsQuery, $nonCancelled): float {
                 return (float) (clone $appointmentsQuery)
+                    ->tap($nonCancelled)
                     ->whereBetween('appointment_date', [
                         $month->copy()->toDateString(),
                         $month->copy()->endOfMonth()->toDateString(),
@@ -83,9 +110,31 @@ class DashboardController extends Controller
             })
             ->all();
 
-        $yearlyExpenseSeries = collect($yearlyIncomeSeries)
-            ->map(fn (float $value) => round($value * 0.38, 2))
+        $yearlyPendingSeries = $yearlyRevenuePeriods
+            ->map(function ($month) use ($appointmentsQuery): float {
+                return (float) (clone $appointmentsQuery)
+                    ->where('status', Appointment::STATUS_PENDING)
+                    ->whereBetween('appointment_date', [
+                        $month->copy()->toDateString(),
+                        $month->copy()->endOfMonth()->toDateString(),
+                    ])
+                    ->sum('fee');
+            })
             ->all();
+
+        // --- Appointments per day (last 7 days) ---
+        $appointmentsPerDaySeries = $chartLabels
+            ->map(fn ($date) => (int) (clone $appointmentsQuery)
+                ->whereDate('appointment_date', $date)
+                ->count())
+            ->all();
+
+        // --- Status distribution (real) ---
+        $statusDistribution = [
+            'confirmed' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_CONFIRMED)->count(),
+            'pending' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_PENDING)->count(),
+            'cancelled' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_CANCELLED)->count(),
+        ];
 
         $ageGroups = ['child' => 0, 'adult' => 0, 'elderly' => 0];
 
@@ -163,22 +212,24 @@ class DashboardController extends Controller
             'patientAgeGroups' => $ageGroups,
             'revenueLabels' => $chartLabels->map->format('D')->all(),
             'incomeSeries' => $incomeSeries,
-            'expenseSeries' => $expenseSeries,
+            'pendingSeries' => $pendingSeries,
+            'appointmentsPerDaySeries' => $appointmentsPerDaySeries,
+            'statusDistribution' => $statusDistribution,
             'revenueDatasets' => [
                 'week' => [
                     'labels' => $chartLabels->map->format('D')->all(),
                     'income' => $incomeSeries,
-                    'expense' => $expenseSeries,
+                    'pending' => $pendingSeries,
                 ],
                 'month' => [
                     'labels' => $monthlyRevenuePeriods->map(fn ($period) => $period->format('\W\e\e\k W'))->all(),
                     'income' => $monthlyIncomeSeries,
-                    'expense' => $monthlyExpenseSeries,
+                    'pending' => $monthlyPendingSeries,
                 ],
                 'year' => [
                     'labels' => $yearlyRevenuePeriods->map->format('M')->all(),
                     'income' => $yearlyIncomeSeries,
-                    'expense' => $yearlyExpenseSeries,
+                    'pending' => $yearlyPendingSeries,
                 ],
             ],
             'departmentDistribution' => $departmentDistribution,
@@ -232,6 +283,44 @@ class DashboardController extends Controller
         }
 
         return $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * JSON endpoint powering the "Patient Overview (by Age Stages)" card.
+     * Respects role scoping via visiblePatientsQuery() and filters by range.
+     */
+    public function getPatientOverview(Request $request): JsonResponse
+    {
+        $range = in_array($request->string('range')->toString(), ['current', 'quarter', 'year'], true)
+            ? $request->string('range')->toString()
+            : 'current';
+
+        $query = $this->visiblePatientsQuery($request->user());
+
+        if ($range === 'quarter') {
+            $query->whereBetween('created_at', [today()->startOfQuarter(), today()->endOfQuarter()]);
+        } elseif ($range === 'year') {
+            $query->whereBetween('created_at', [today()->startOfYear(), today()->endOfYear()]);
+        }
+
+        $groups = ['child' => 0, 'adult' => 0, 'elderly' => 0];
+
+        $query->get(['id', 'date_of_birth', 'age'])
+            ->each(function (Patient $patient) use (&$groups): void {
+                $group = $patient->ageGroup();
+
+                if (array_key_exists($group, $groups)) {
+                    $groups[$group]++;
+                }
+            });
+
+        return response()->json([
+            'range' => $range,
+            'child' => $groups['child'],
+            'adult' => $groups['adult'],
+            'elderly' => $groups['elderly'],
+            'total' => array_sum($groups),
+        ]);
     }
 
     public function updateAvailability(Request $request): RedirectResponse

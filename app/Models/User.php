@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Computed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -70,19 +69,16 @@ class User extends Authenticatable
         return in_array($this->role, $roles, true);
     }
 
-    #[Computed]
     public function isAdmin(): bool
     {
         return $this->hasRole(self::ROLE_ADMIN);
     }
 
-    #[Computed]
     public function isDoctor(): bool
     {
         return $this->hasRole(self::ROLE_DOCTOR);
     }
 
-    #[Computed]
     public function isPatient(): bool
     {
         return $this->hasRole(self::ROLE_PATIENT);

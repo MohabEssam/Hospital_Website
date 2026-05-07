@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Services\AppointmentConflictService;
+use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -94,6 +95,19 @@ class StoreAppointmentRequest extends FormRequest
 
                 if ($hasConflict) {
                     $validator->errors()->add('start_time', 'This appointment overlaps with another booking for the selected doctor.');
+
+                    return;
+                }
+
+                $withinSchedule = app(DoctorScheduleService::class)->rangeWithinSchedule(
+                    $doctor,
+                    (string) $this->input('appointment_date'),
+                    (string) $this->input('start_time'),
+                    (string) $this->input('end_time'),
+                );
+
+                if (! $withinSchedule && $this->input('status') !== Appointment::STATUS_CANCELLED) {
+                    $validator->errors()->add('start_time', 'The selected time is outside the doctor\'s weekly schedule.');
                 }
             },
         ];

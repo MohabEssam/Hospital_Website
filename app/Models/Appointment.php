@@ -29,6 +29,7 @@ class Appointment extends Model
         'type',
         'reference_id',
         'phone_number',
+        'confirmation_email_sent_at',
     ];
 
     protected function casts(): array
@@ -36,6 +37,7 @@ class Appointment extends Model
         return [
             'appointment_date' => 'date',
             'fee' => 'decimal:2',
+            'confirmation_email_sent_at' => 'datetime',
         ];
     }
 
