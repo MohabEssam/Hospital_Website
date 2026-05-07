@@ -8,10 +8,10 @@
   <section id="about" class="about section">
     <div class="container">
       <div class="row gy-4 gx-5">
-        <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-6 position-relative align-self-start reveal" style="transition-delay: 200ms">
           <img src="{{ asset('images/' . $pharmacy->image) }}" class="img-fluid" alt="{{ $pharmacy->name }}" width="450">
         </div>
-        <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-lg-6 content reveal" style="transition-delay: 100ms">
           <h3>{{ $pharmacy->name }}</h3>
           <h6>{{ $pharmacy->description }}</h6>
           <ul>
@@ -49,7 +49,7 @@
 
     <!-- Products Coming Soon -->
     <section id="gallery" class="gallery section">
-      <div class="container section-title" data-aos="fade-up">
+      <div class="container section-title reveal">
         <h2>Medicine <i class="fa-solid fa-capsules" style="margin-left: 5px; color: #1977cc;"></i></h2>
         <p style="text-align: center; font-size: 48px; color: #1977cc;">COMING SOON <i class="fa-solid fa-face-smile-beam" style="margin-left: 5px; color: #1977cc;"></i></p>
       </div>
