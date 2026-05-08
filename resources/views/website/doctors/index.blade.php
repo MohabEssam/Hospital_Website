@@ -7,7 +7,7 @@
   <section class="doctors section">
     <div class="container section-title reveal">
       <h2>Our Doctors</h2>
-      <p>Find the right specialist for your healthcare needs</p>
+      <p>Find the right doctor for your healthcare needs</p>
     </div>
 
     <div class="container reveal" style="transition-delay: 100ms">
@@ -16,7 +16,7 @@
         <label class="doctor-search">
           <i class="bi bi-search" aria-hidden="true"></i>
           <span class="visually-hidden">Search doctors</span>
-          <input type="search" data-doctor-search placeholder="Search by doctor or specialty">
+          <input type="search" data-doctor-search placeholder="Search doctors">
         </label>
 
         <form method="GET" action="{{ route('website.doctors') }}" class="doctor-filter-form">

@@ -41,6 +41,7 @@ class Patient extends Model
         return [
             'date_of_birth' => 'date',
             'check_in_date' => 'date',
+            'age' => 'integer',
         ];
     }
 

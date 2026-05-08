@@ -4,13 +4,18 @@ namespace Database\Factories;
 
 use App\Models\Department;
 use App\Models\Doctor;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Doctor>
  */
 class DoctorFactory extends Factory
 {
+    protected static array $doctorCodeCounters = [];
+
     /**
      * Define the model's default state.
      *
@@ -18,18 +23,61 @@ class DoctorFactory extends Factory
      */
     public function definition(): array
     {
+        $department = Department::query()->inRandomOrder()->first();
+
+        if (! $department) {
+            return [];
+        }
+
+        $name = 'Dr. '.fake()->name();
+        $profile = $this->departmentProfile($department);
+        $avatarColumn = Schema::hasColumn('doctors', 'avatar') ? 'avatar' : 'avatar_path';
+
         return [
-            'department_id' => Department::factory(),
-            'name' => 'Dr. '.fake()->name(),
+            'user_id' => User::factory()->doctor(),
+            'department_id' => $department->id,
+            'name' => $name,
+            'slug' => Str::slug($name).'-'.uniqid(),
+            'doctor_code' => $this->nextDoctorCode($profile['code']),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'specialty' => fake()->jobTitle(),
+            'specialty' => fake()->randomElement($profile['specialties']),
             'biography' => fake()->paragraph(),
             'address' => fake()->address(),
             'availability_status' => fake()->randomElement(Doctor::availabilityOptions()),
-            'consultation_fee' => fake()->numberBetween(150, 600),
-            'avatar_path' => 'assets/images/profile/user-1.jpg',
+            'consultation_fee' => fake()->numberBetween($profile['fee'][0], $profile['fee'][1]),
+            $avatarColumn => 'assets/images/profile/user-1.jpg',
             'years_of_experience' => fake()->numberBetween(3, 20),
         ];
+    }
+
+    private function departmentProfile(Department $department): array
+    {
+        return match ($department->name) {
+            'General Medicine' => ['code' => 'GM', 'specialties' => ['General Physician', 'Family Medicine Specialist'], 'fee' => [150, 240]],
+            'Cardiology' => ['code' => 'CD', 'specialties' => ['Heart Specialist', 'Cardiologist'], 'fee' => [280, 420]],
+            'Pediatrics' => ['code' => 'PD', 'specialties' => ['Child Specialist', 'Pediatrician'], 'fee' => [180, 280]],
+            'Dermatology' => ['code' => 'DM', 'specialties' => ['Skin Specialist', 'Dermatologist'], 'fee' => [180, 300]],
+            'Neurology' => ['code' => 'NR', 'specialties' => ['Brain Specialist', 'Neurologist'], 'fee' => [300, 480]],
+            'Orthopedics' => ['code' => 'OR', 'specialties' => ['Bone Specialist', 'Orthopedic Surgeon'], 'fee' => [240, 380]],
+            default => ['code' => 'DR', 'specialties' => ['Medical Specialist'], 'fee' => [150, 350]],
+        };
+    }
+
+    private function nextDoctorCode(string $departmentCode): string
+    {
+        if (! array_key_exists($departmentCode, static::$doctorCodeCounters)) {
+            static::$doctorCodeCounters[$departmentCode] = Doctor::query()
+                ->where('doctor_code', 'like', "WNH-{$departmentCode}-%")
+                ->pluck('doctor_code')
+                ->map(fn (string $code) => (int) Str::afterLast($code, '-'))
+                ->max() ?? 0;
+        }
+
+        do {
+            $code = sprintf('WNH-%s-%03d', $departmentCode, ++static::$doctorCodeCounters[$departmentCode]);
+        } while (Doctor::query()->where('doctor_code', $code)->exists());
+
+        return $code;
     }
 }

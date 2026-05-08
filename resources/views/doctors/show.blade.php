@@ -33,11 +33,6 @@
           <hr>
 
           <div class="text-start mb-3">
-            <p class="text-muted small mb-1">Specialist</p>
-            <p class="fw-medium mb-0">{{ $doctor->specialty }}</p>
-          </div>
-
-          <div class="text-start mb-3">
             <p class="text-muted small mb-1">About</p>
             <p class="small mb-0 text-secondary">
               {{ $doctor->biography ?: 'No biography has been added for this doctor yet.' }}

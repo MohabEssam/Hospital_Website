@@ -136,17 +136,7 @@ class DashboardController extends Controller
             'cancelled' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_CANCELLED)->count(),
         ];
 
-        $ageGroups = ['child' => 0, 'adult' => 0, 'elderly' => 0];
-
-        (clone $patientsQuery)
-            ->get(['id', 'date_of_birth'])
-            ->each(function (Patient $patient) use (&$ageGroups): void {
-                $group = $patient->ageGroup();
-
-                if (array_key_exists($group, $ageGroups)) {
-                    $ageGroups[$group]++;
-                }
-            });
+        $ageGroups = $this->patientAgeGroups($patientsQuery);
 
         $departmentDistribution = Department::query()
             ->withCount('doctors')
@@ -285,6 +275,23 @@ class DashboardController extends Controller
         return $query->whereRaw('1 = 0');
     }
 
+    private function patientAgeGroups(Builder $query): array
+    {
+        $groups = ['child' => 0, 'adult' => 0, 'elderly' => 0];
+
+        (clone $query)
+            ->get(['id', 'date_of_birth', 'age'])
+            ->each(function (Patient $patient) use (&$groups): void {
+                $group = $patient->ageGroup();
+
+                if (array_key_exists($group, $groups)) {
+                    $groups[$group]++;
+                }
+            });
+
+        return $groups;
+    }
+
     /**
      * JSON endpoint powering the "Patient Overview (by Age Stages)" card.
      * Respects role scoping via visiblePatientsQuery() and filters by range.
@@ -303,16 +310,7 @@ class DashboardController extends Controller
             $query->whereBetween('created_at', [today()->startOfYear(), today()->endOfYear()]);
         }
 
-        $groups = ['child' => 0, 'adult' => 0, 'elderly' => 0];
-
-        $query->get(['id', 'date_of_birth', 'age'])
-            ->each(function (Patient $patient) use (&$groups): void {
-                $group = $patient->ageGroup();
-
-                if (array_key_exists($group, $groups)) {
-                    $groups[$group]++;
-                }
-            });
+        $groups = $this->patientAgeGroups($query);
 
         return response()->json([
             'range' => $range,

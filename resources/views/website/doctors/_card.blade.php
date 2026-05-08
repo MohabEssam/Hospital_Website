@@ -10,7 +10,7 @@
       : route('login');
   $summary = $doctor->biography
       ? \Illuminate\Support\Str::limit(strip_tags($doctor->biography), 92)
-      : 'Compassionate specialist focused on clear guidance, careful diagnosis, and patient-centered treatment.';
+      : 'Compassionate clinician focused on clear guidance, careful diagnosis, and patient-centered treatment.';
 @endphp
 
 <article class="doctor-card"
@@ -42,7 +42,6 @@
   <div class="doctor-card-body">
     <p class="doctor-department">{{ $departmentName }}</p>
     <h3>{{ $doctor->name }}</h3>
-    <p class="doctor-specialty">{{ $doctor->specialty }}</p>
     <p class="doctor-summary">{{ $summary }}</p>
 
 

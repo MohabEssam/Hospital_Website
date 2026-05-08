@@ -13,6 +13,7 @@ use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,8 +23,10 @@ class DoctorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
+        $search = trim((string) $request->search);
+
         $doctors = Doctor::query()
             ->with('department')
             ->withCount([
@@ -31,35 +34,39 @@ class DoctorController extends Controller
                 'appointments',
                 'appointments as today_appointments_count' => fn (Builder $query) => $query->whereDate('appointment_date', today()),
             ])
-            ->when(
-                $request->filled('search'),
-                fn (Builder $query) => $query->where(function (Builder $nested) use ($request): void {
-                    $term = (string) $request->string('search');
-
-                    $nested
-                        ->where('name', 'like', "%{$term}%")
-                        ->orWhere('doctor_code', 'like', "%{$term}%")
-                        ->orWhere('specialty', 'like', "%{$term}%")
-                        ->orWhereHas('department', fn (Builder $departmentQuery) => $departmentQuery->where('name', 'like', "%{$term}%"));
-                }),
-            )
+            ->when($search, function (Builder $query) use ($search): void {
+                $query->where(function (Builder $query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('doctor_code', 'like', "%{$search}%")
+                        ->orWhere('specialty', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhereHas('department', function (Builder $query) use ($search): void {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->when($request->filled('department_id'), fn (Builder $query) => $query->where('department_id', $request->integer('department_id')))
-            ->when($request->filled('specialty'), fn (Builder $query) => $query->where('specialty', $request->string('specialty')))
             ->when($request->filled('availability_status'), fn (Builder $query) => $query->where('availability_status', $request->string('availability_status')))
-            ->orderBy('name')
+            ->latest()
             ->paginate(10)
             ->withQueryString();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('doctors._table', ['doctors' => $doctors])->render(),
+                'url' => $request->fullUrl(),
+            ]);
+        }
 
         return view('doctors.index', [
             'doctors' => $doctors,
             'departments' => Department::query()->orderBy('name')->get(),
-            'specialties' => Doctor::query()
-                ->whereNotNull('specialty')
-                ->select('specialty')
-                ->distinct()
-                ->orderBy('specialty')
-                ->pluck('specialty'),
-            'filters' => $request->only(['search', 'department_id', 'specialty', 'availability_status']),
+            'filters' => [
+                'search' => $search,
+                'department_id' => $request->input('department_id'),
+                'availability_status' => $request->input('availability_status'),
+            ],
         ]);
     }
 

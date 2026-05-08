@@ -31,6 +31,7 @@ class Doctor extends Model
         'availability_status',
         'consultation_fee',
         'avatar',
+        'avatar_path',
         'years_of_experience',
         'rating',
     ];
@@ -47,10 +48,9 @@ class Doctor extends Model
     protected static function booted(): void
     {
         static::saving(function (Doctor $doctor): void {
-            $doctor->slug = static::buildUniqueSlug(
-                $doctor->name,
-                $doctor->getKey(),
-            );
+            if (blank($doctor->slug)) {
+                $doctor->slug = Str::slug($doctor->name).'-'.uniqid();
+            }
 
             if (blank($doctor->doctor_code)) {
                 $doctor->doctor_code = static::buildDoctorCode($doctor->getKey());

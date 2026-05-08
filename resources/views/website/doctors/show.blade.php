@@ -55,7 +55,6 @@
           <div class="doctor-profile-intro">
             <div class="profile-kicker">{{ $departmentName }}</div>
             <h1>{{ $doctor->name }}</h1>
-            <p class="profile-specialty">{{ $doctor->specialty }}</p>
 
             <div class="profile-trust-row" aria-label="Doctor rating and availability">
               <span class="profile-availability {{ $doctor->isAvailable() ? 'is-available' : 'is-busy' }}">
