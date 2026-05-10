@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Patient;
+use App\Models\User;
 use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -16,7 +17,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DoctorController extends Controller
 {
@@ -93,11 +96,31 @@ class DoctorController extends Controller
                 ->storeAs('doctors', time() . '_' . $request->file('avatar')->getClientOriginalName(), 'public');
         }
 
-        $doctor = Doctor::create($data);
+        $password = 'Dr@'.strtoupper(Str::random(3)).rand(100, 999);
+
+        DB::transaction(function () use ($data, $request, $password): void {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $request->email,
+                'password' => bcrypt($password),
+                'role' => User::ROLE_DOCTOR,
+            ]);
+
+            Doctor::create([
+                ...$data,
+                'user_id' => $user->getKey(),
+            ]);
+        });
 
         return redirect()
-            ->route('doctors.show', $doctor)
-            ->with('status', 'Doctor created successfully.');
+            ->route('doctors.index')
+            ->with(
+                'success',
+                "✅ Doctor account created successfully!\n".
+                "📧 Email: ".$request->email."\n".
+                "🔑 Password: ".$password."\n".
+                "⚠️ Please share these credentials with the doctor securely."
+            );
     }
 
     /**

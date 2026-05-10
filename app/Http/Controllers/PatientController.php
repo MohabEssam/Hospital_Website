@@ -97,7 +97,7 @@ class PatientController extends Controller
 
         return redirect()
             ->route('patients.show', $patient)
-            ->with('status', 'Patient created successfully.');
+            ->with('status', 'Patient    successfully.');
     }
 
     /**

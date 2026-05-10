@@ -28,7 +28,7 @@ class StoreDoctorRequest extends FormRequest
             'department_id' => ['required', 'exists:departments,id'],
             'name' => ['required', 'string', 'max:255'],
             'doctor_code' => ['nullable', 'string', 'max:255', Rule::unique('doctors', 'doctor_code')],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('doctors', 'email')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('doctors', 'email'), Rule::unique('users', 'email')],
             'phone' => ['nullable', 'string', 'max:255'],
             'specialty' => ['required', 'string', 'max:255'],
             'biography' => ['nullable', 'string'],

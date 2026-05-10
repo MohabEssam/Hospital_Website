@@ -1,0 +1,60 @@
+/* ============================================
+   Reveal Animation System
+   Lightweight replacement for AOS
+   ============================================ */
+
+/* Base reveal state */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
+}
+
+/* Active (visible) state */
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Direction variants */
+.reveal.left {
+  transform: translateX(-40px);
+}
+
+.reveal.left.active {
+  transform: translateX(0);
+}
+
+.reveal.right {
+  transform: translateX(40px);
+}
+
+.reveal.right.active {
+  transform: translateX(0);
+}
+
+.reveal.zoom {
+  transform: scale(0.85);
+}
+
+.reveal.zoom.active {
+  transform: scale(1);
+}
+
+.reveal.fade-in {
+  transform: none;
+}
+
+.reveal.fade-in.active {
+  transform: none;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

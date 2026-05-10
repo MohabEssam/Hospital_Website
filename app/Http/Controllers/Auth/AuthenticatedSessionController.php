@@ -28,8 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        if ($user->isDoctor()) {
+            return redirect()->intended(route('dashboard'));
+        }
+
         if ($user->isPatient()) {
-            return redirect()->intended(route('home'));
+            return redirect()->intended(route('patient.dashboard'));
         }
 
         return redirect()->intended(route('dashboard'));

@@ -9,6 +9,12 @@
 
   <h4 class="fw-bold mb-4">Doctors</h4>
 
+  @if(session('success'))
+    <div class="alert alert-success border-0 shadow-sm mb-4" style="white-space: pre-line;" role="alert">
+      {{ session('success') }}
+    </div>
+  @endif
+
   <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
     <form method="GET" action="{{ route('doctors.index') }}" class="input-group input-group-sm" style="max-width:260px;" data-doctor-search-form>
       <input type="hidden" name="department_id" value="{{ $filters['department_id'] ?? '' }}">

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DoctorDashboardController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Website\BookingController;
@@ -59,6 +60,7 @@ Route::middleware('auth')->group(function (): void {
 
     // --- Patient: booking via website ---
     Route::middleware('role:patient')->group(function (): void {
+        Route::get('/patient/dashboard', [BookingController::class, 'myBookings'])->name('patient.dashboard');
         Route::post('/my-bookings/{appointment}/cancel', [BookingController::class, 'cancel'])->name('website.booking.cancel');
         Route::get('/book', [BookingController::class, 'create'])->name('website.book');
         Route::post('/book', [BookingController::class, 'store'])->name('website.book.store');
@@ -69,6 +71,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::post('/patient-care/{service}/book', [PatientCareController::class, 'storeBooking'])
             ->name('website.patient-care.book');
+    });
+
+    Route::middleware('doctor')->prefix('doctor')->name('doctor.')->group(function (): void {
+        Route::get('/dashboard', DoctorDashboardController::class)->name('dashboard');
     });
 
     // --- Dashboard routes (admin & doctor only) ---

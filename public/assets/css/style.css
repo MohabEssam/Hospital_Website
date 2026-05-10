@@ -86,3 +86,78 @@
   display: block;
   margin: 0 auto;
 }
+
+/* Dashboard Pagination */
+.dash-pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dash-page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #3f4047;
+  font-size: .78rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.dash-page-link:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #3f4047;
+  text-decoration: none;
+}
+
+.dash-page-item.active .dash-page-link {
+  background: #3f4047;
+  border-color: #3f4047;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(63, 64, 71, 0.2);
+  pointer-events: none;
+}
+
+.dash-page-item.disabled .dash-page-link {
+  background: #f9fafb;
+  border-color: #f0f0f0;
+  color: #d1d5db;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.dash-page-arrow {
+  min-width: 32px;
+  padding: 0;
+}
+
+.dash-page-arrow svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Mini calendar hover — dashboard */
+.mini-cal-cell:hover {
+  background: #eef5ff !important;
+}
+
+/* Dashboard date strip hover */
+.dashboard a > div[style*='min-width:56px']:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}

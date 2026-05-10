@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\DoctorMiddleware;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,13 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(function (Request $request) {
             $user = $request->user();
 
+            if ($user && $user->role === 'doctor') {
+                return route('doctor.dashboard');
+            }
+
             if ($user && $user->role === 'patient') {
-                return route('home');
+                return route('patient.dashboard');
             }
 
             return route('dashboard');
         });
         $middleware->alias([
+            'doctor' => DoctorMiddleware::class,
             'role' => EnsureUserHasRole::class,
         ]);
     })
