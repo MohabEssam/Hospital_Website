@@ -23,7 +23,20 @@ class WebDoctorController extends Controller
     public function index(Request $request): View
     {
         $doctors = Doctor::query()
-            ->with('department')
+            ->select([
+                'id',
+                'department_id',
+                'name',
+                'specialty',
+                'biography',
+                'phone',
+                'email',
+                'availability_status',
+                'avatar',
+                'years_of_experience',
+                'rating',
+            ])
+            ->with('department:id,name')
             ->when(
                 $request->filled('department_id'),
                 fn (Builder $query) => $query->where('department_id', $request->integer('department_id')),
@@ -34,7 +47,7 @@ class WebDoctorController extends Controller
 
         return view('website.doctors.index', [
             'doctors' => $doctors,
-            'departments' => Department::query()->active()->orderBy('name')->get(),
+            'departments' => Department::query()->active()->orderBy('name')->get(['id', 'name', 'is_active']),
         ]);
     }
 

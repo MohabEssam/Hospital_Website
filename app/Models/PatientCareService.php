@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class PatientCareService extends Model
@@ -40,11 +39,6 @@ class PatientCareService extends Model
                 $service->getKey(),
             );
         });
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(ServiceBooking::class);
     }
 
     public function scopeActive($query)

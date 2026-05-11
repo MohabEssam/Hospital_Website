@@ -26,7 +26,8 @@ class DoctorDashboardController extends Controller
         ]);
 
         $upcomingAppointments = $doctor->appointments()
-            ->with('patient')
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
+            ->with('patient:id,name')
             ->whereDate('appointment_date', '>=', today())
             ->where('status', '!=', Appointment::STATUS_CANCELLED)
             ->orderBy('appointment_date')

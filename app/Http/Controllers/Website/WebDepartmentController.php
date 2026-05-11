@@ -14,6 +14,7 @@ class WebDepartmentController extends Controller
     public function index(Request $request): View|JsonResponse
     {
         $departments = Department::query()
+            ->select(['id', 'name', 'slug', 'description', 'services', 'icon', 'hero_image', 'is_active'])
             ->active()
             ->withCount('doctors')
             ->when(
@@ -46,10 +47,13 @@ class WebDepartmentController extends Controller
     public function show(Department $department): View
     {
         $department->load(['doctors' => function ($query) {
-            $query->with('department')->orderBy('name');
+            $query
+                ->select(['id', 'department_id', 'name', 'specialty', 'availability_status', 'avatar'])
+                ->orderBy('name');
         }]);
 
         $allDepartments = Department::query()
+            ->select(['id', 'name', 'slug', 'is_active','icon'])
             ->active()
             ->withCount('doctors')
             ->orderBy('name')

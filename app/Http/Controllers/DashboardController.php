@@ -139,27 +139,37 @@ class DashboardController extends Controller
         $ageGroups = $this->patientAgeGroups($patientsQuery);
 
         $departmentDistribution = Department::query()
+            ->select(['id', 'name'])
             ->withCount('doctors')
             ->orderByDesc('doctors_count')
             ->take(4)
             ->get();
 
         $topDoctors = Doctor::query()
-            ->with('department')
+            ->select(['id', 'department_id', 'name', 'availability_status'])
+            ->with('department:id,name')
             ->withCount(['patients', 'appointments'])
             ->orderByDesc('appointments_count')
             ->take(5)
             ->get();
 
         $recentAppointments = (clone $appointmentsQuery)
-            ->with(['patient', 'doctor.department'])
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'status', 'treatment'])
+            ->with([
+                'patient:id,name',
+                'doctor:id,name',
+            ])
             ->orderByDesc('appointment_date')
             ->orderBy('start_time')
             ->take(6)
             ->get();
 
         $todaySchedule = (clone $appointmentsQuery)
-            ->with(['patient', 'doctor.department'])
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'status', 'treatment'])
+            ->with([
+                'patient:id,name',
+                'doctor:id,name',
+            ])
             ->whereDate('appointment_date', today())
             ->orderBy('start_time')
             ->take(5)

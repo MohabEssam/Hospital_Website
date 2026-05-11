@@ -81,6 +81,7 @@ class DoctorScheduleService
         $dayOfWeek = Carbon::parse($date)->dayOfWeek;
 
         $schedules = $doctor->schedules()
+            ->select(['id', 'doctor_id', 'start_time', 'end_time'])
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
             ->get();

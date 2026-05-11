@@ -17,7 +17,7 @@ class PatientCareController extends Controller
             'services' => PatientCareService::query()
                 ->active()
                 ->orderBy('sort_order')
-                ->get(),
+                ->get(['id', 'name', 'slug', 'description', 'image', 'icon_class', 'is_bookable', 'is_active', 'sort_order']),
         ]);
     }
 

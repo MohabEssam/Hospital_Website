@@ -31,7 +31,6 @@ class Doctor extends Model
         'availability_status',
         'consultation_fee',
         'avatar',
-        'avatar_path',
         'years_of_experience',
         'rating',
     ];

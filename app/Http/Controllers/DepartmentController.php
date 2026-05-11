@@ -18,6 +18,7 @@ class DepartmentController extends Controller
     {
         return view('departments.index', [
             'departments' => Department::query()
+                ->select(['id', 'name', 'slug', 'description', 'icon', 'hero_image', 'is_active'])
                 ->withCount('doctors')
                 ->orderBy('name')
                 ->get(),
@@ -54,6 +55,14 @@ class DepartmentController extends Controller
     {
         $department->load([
             'doctors' => fn ($query) => $query
+                ->select([
+                    'id',
+                    'department_id',
+                    'name',
+                    'doctor_code',
+                    'specialty',
+                    'availability_status',
+                ])
                 ->withCount(['patients', 'appointments'])
                 ->orderBy('name'),
         ]);
@@ -63,7 +72,7 @@ class DepartmentController extends Controller
             'otherDepartments' => Department::query()
                 ->whereKeyNot($department->getKey())
                 ->orderBy('name')
-                ->get(),
+                ->get(['id', 'name', 'slug']),
         ]);
     }
 

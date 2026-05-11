@@ -34,7 +34,23 @@ class AppointmentController extends Controller
 
         $appointments = $this->applyFilters(
             $this->visibleAppointmentsQuery($request->user())
-                ->with(['patient', 'doctor.department', 'department']),
+                ->select([
+                    'id',
+                    'patient_id',
+                    'doctor_id',
+                    'department_id',
+                    'appointment_date',
+                    'start_time',
+                    'end_time',
+                    'status',
+                    'treatment',
+                ])
+                ->with([
+                    'patient:id,name',
+                    'doctor:id,name,department_id',
+                    'doctor.department:id,name',
+                    'department:id,name',
+                ]),
             $request,
             true,
         )
@@ -100,7 +116,13 @@ class AppointmentController extends Controller
         abort_unless($this->canAccess($appointment, auth()->user()), 403);
 
         return view('appointments.show', [
-            'appointment' => $appointment->load(['patient.doctor', 'doctor.department', 'department']),
+            'appointment' => $appointment->load([
+                'patient:id,name,doctor_id,email,phone',
+                'patient.doctor:id,name,department_id',
+                'doctor:id,name,department_id',
+                'doctor.department:id,name',
+                'department:id,name',
+            ]),
         ]);
     }
 
@@ -193,7 +215,11 @@ class AppointmentController extends Controller
      */
     private function dispatchConfirmationEmail(Appointment $appointment): void
     {
-        $appointment->loadMissing(['patient', 'doctor']);
+        $appointment->loadMissing([
+            'patient:id,user_id,email,name',
+            'patient.user:id,email',
+            'doctor:id,name,specialty',
+        ]);
 
         // Idempotency guard — already sent before.
         if ($appointment->confirmation_email_sent_at !== null) {
@@ -308,25 +334,25 @@ class AppointmentController extends Controller
     private function assignableDoctors(User $user)
     {
         if ($user->isDoctor() && $user->doctorProfile) {
-            return Doctor::query()->whereKey($user->doctorProfile->getKey())->get();
+            return Doctor::query()->whereKey($user->doctorProfile->getKey())->get(['id', 'name']);
         }
 
         if ($user->isPatient()) {
             return Doctor::query()
                 ->where('availability_status', Doctor::STATUS_AVAILABLE)
                 ->orderBy('name')
-                ->get();
+                ->get(['id', 'name']);
         }
 
-        return Doctor::query()->orderBy('name')->get();
+        return Doctor::query()->orderBy('name')->get(['id', 'name']);
     }
 
     private function assignablePatients(User $user)
     {
         if ($user->isPatient() && $user->patientProfile) {
-            return Patient::query()->whereKey($user->patientProfile->getKey())->get();
+            return Patient::query()->whereKey($user->patientProfile->getKey())->get(['id', 'name']);
         }
 
-        return Patient::query()->orderBy('name')->get();
+        return Patient::query()->orderBy('name')->get(['id', 'name']);
     }
 }

@@ -14,7 +14,20 @@ class ServiceBookingController extends Controller
         $statusFilter = $request->input('status', 'all');
 
         $query = ServiceBooking::query()
-            ->with(['patient.user', 'service']);
+            ->select([
+                'id',
+                'patient_id',
+                'patient_care_service_id',
+                'booking_date',
+                'booking_time',
+                'phone_number',
+                'status',
+            ])
+            ->with([
+                'patient:id,user_id,name',
+                'patient.user:id,email',
+                'service:id,name',
+            ]);
 
         if ($statusFilter !== 'all' && in_array($statusFilter, [ServiceBooking::STATUS_PENDING, ServiceBooking::STATUS_CONFIRMED, ServiceBooking::STATUS_REJECTED], true)) {
             $query->where('status', $statusFilter);

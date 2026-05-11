@@ -16,14 +16,23 @@ class HomeController extends Controller
         return view('website.home', [
             'departments' => Department::query()
                 ->active()
-                ->withCount('doctors')
-                ->with(['doctors' => function ($q) {
-                    $q->with('department')->take(4)->orderBy('name');
-                }])
                 ->orderBy('name')
-                ->get(),
+                ->get(['id', 'name', 'slug', 'icon', 'is_active']),
             'doctors' => Doctor::query()
-                ->with('department')
+                ->select([
+                    'id',
+                    'department_id',
+                    'name',
+                    'specialty',
+                    'biography',
+                    'phone',
+                    'email',
+                    'availability_status',
+                    'avatar',
+                    'years_of_experience',
+                    'rating',
+                ])
+                ->with('department:id,name')
                 ->where('availability_status', Doctor::STATUS_AVAILABLE)
                 ->orderBy('name')
                 ->get(),
@@ -35,7 +44,7 @@ class HomeController extends Controller
             'patientCareServices' => PatientCareService::query()
                 ->active()
                 ->orderBy('sort_order')
-                ->get(),
+                ->get(['id', 'name', 'slug', 'description', 'image', 'icon_class', 'is_active', 'sort_order']),
         ]);
     }
 }

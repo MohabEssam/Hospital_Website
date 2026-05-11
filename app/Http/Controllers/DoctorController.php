@@ -31,7 +31,15 @@ class DoctorController extends Controller
         $search = trim((string) $request->search);
 
         $doctors = Doctor::query()
-            ->with('department')
+            ->select([
+                'id',
+                'department_id',
+                'name',
+                'doctor_code',
+                'availability_status',
+                'created_at',
+            ])
+            ->with('department:id,name')
             ->withCount([
                 'patients',
                 'appointments',
@@ -64,7 +72,7 @@ class DoctorController extends Controller
 
         return view('doctors.index', [
             'doctors' => $doctors,
-            'departments' => Department::query()->orderBy('name')->get(),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
             'filters' => [
                 'search' => $search,
                 'department_id' => $request->input('department_id'),
@@ -80,7 +88,7 @@ class DoctorController extends Controller
     {
         return view('doctors.create', [
             'doctor' => new Doctor(),
-            'departments' => Department::query()->orderBy('name')->get(),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -132,8 +140,9 @@ class DoctorController extends Controller
         $doctor->loadCount(['patients', 'appointments']);
 
         $recentAppointments = Appointment::query()
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient')
+            ->with('patient:id,name,status')
             ->orderByDesc('appointment_date')
             ->orderBy('start_time')
             ->take(4)
@@ -160,8 +169,9 @@ class DoctorController extends Controller
             ->all();
 
         $todaySchedule = Appointment::query()
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient')
+            ->with('patient:id,name,status')
             ->whereDate('appointment_date', today())
             ->orderBy('start_time')
             ->get();
@@ -189,8 +199,9 @@ class DoctorController extends Controller
         $calendarDate = Carbon::create($year, $month, 1);
 
         $appointments = Appointment::query()
+            ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient')
+            ->with('patient:id,name,status')
             ->whereBetween('appointment_date', [
                 $calendarDate->copy()->startOfMonth()->toDateString(),
                 $calendarDate->copy()->endOfMonth()->toDateString(),
@@ -259,7 +270,7 @@ class DoctorController extends Controller
     {
         return view('doctors.edit', [
             'doctor' => $doctor,
-            'departments' => Department::query()->orderBy('name')->get(),
+            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

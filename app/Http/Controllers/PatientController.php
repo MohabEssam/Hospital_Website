@@ -20,7 +20,23 @@ class PatientController extends Controller
     public function index(Request $request): View
     {
         $patients = $this->visiblePatientsQuery($request->user())
-            ->with(['doctor.department'])
+            ->select([
+                'id',
+                'user_id',
+                'doctor_id',
+                'name',
+                'patient_code',
+                'date_of_birth',
+                'age',
+                'check_in_date',
+                'treatment',
+                'room_number',
+                'status',
+            ])
+            ->with([
+                'doctor:id,name,department_id',
+                'doctor.department:id,name',
+            ])
             ->withCount('appointments')
             ->when($request->filled('period'), function (Builder $query) use ($request): void {
                 match ((string) $request->string('period')) {
@@ -83,7 +99,7 @@ class PatientController extends Controller
     public function create(): View
     {
         return view('patients.create', [
-            'doctors' => Doctor::query()->orderBy('name')->get(),
+            'doctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
             'patient' => new Patient(),
         ]);
     }
@@ -108,8 +124,14 @@ class PatientController extends Controller
         abort_unless($this->canView($patient, auth()->user()), 403);
 
         $patient->load([
-            'doctor.department',
-            'appointments.doctor.department',
+            'doctor:id,name,department_id',
+            'doctor.department:id,name',
+            'appointments' => fn ($query) => $query
+                ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'treatment', 'status'])
+                ->with([
+                    'doctor:id,name,department_id',
+                    'doctor.department:id,name',
+                ]),
         ]);
 
         return view('patients.show', [
@@ -127,7 +149,7 @@ class PatientController extends Controller
     {
         return view('patients.edit', [
             'patient' => $patient->load('doctor'),
-            'doctors' => Doctor::query()->orderBy('name')->get(),
+            'doctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -177,7 +199,7 @@ class PatientController extends Controller
     private function canView(Patient $patient, User $user): bool
     {
         return $user->isAdmin()
-            || ($user->isDoctor() && $user->doctorProfile?->is($patient->doctor))
+            || ($user->isDoctor() && $patient->doctor_id === $user->doctorProfile?->getKey())
             || ($user->isPatient() && $patient->user_id === $user->getKey());
     }
 }

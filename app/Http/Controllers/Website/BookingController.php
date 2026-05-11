@@ -36,7 +36,7 @@ class BookingController extends Controller
             // Authenticated user - fetch by patient_id
             $patientProfile = $request->user()->patientProfile;
             $query = $patientProfile
-                ? Appointment::where('patient_id', $patientProfile->getKey())
+                ? Appointment::query()->where('patient_id', $patientProfile->getKey())
                 : Appointment::whereRaw('1 = 0');
         } else {
             // Guest user - fetch by phone number
@@ -50,12 +50,28 @@ class BookingController extends Controller
             }
 
             $query = $phone
-                ? Appointment::where('phone_number', $phone)
+                ? Appointment::query()->where('phone_number', $phone)
                 : Appointment::whereRaw('1 = 0');
         }
 
-        // Eager load doctor relationship to prevent N+1
-        $query->with(['doctor.department']);
+        $query
+            ->select([
+                'id',
+                'patient_id',
+                'doctor_id',
+                'appointment_date',
+                'start_time',
+                'end_time',
+                'status',
+                'treatment',
+                'notes',
+                'phone_number',
+                'fee',
+            ])
+            ->with([
+                'doctor:id,name,department_id,specialty',
+                'doctor.department:id,name',
+            ]);
 
         // Apply status filter
         if ($statusFilter !== 'all' && in_array($statusFilter, Appointment::statusOptions(), true)) {
@@ -79,7 +95,18 @@ class BookingController extends Controller
     public function create(Request $request): View
     {
         $doctors = Doctor::query()
-            ->with('department')
+            ->select([
+                'id',
+                'department_id',
+                'name',
+                'specialty',
+                'consultation_fee',
+                'availability_status',
+                'avatar',
+                'years_of_experience',
+                'rating',
+            ])
+            ->with('department:id,name')
             ->where('availability_status', Doctor::STATUS_AVAILABLE)
             ->orderBy('name')
             ->get();
@@ -95,7 +122,7 @@ class BookingController extends Controller
 
         return view('website.bookings.create', [
             'doctors' => $doctors,
-            'departments' => Department::query()->active()->orderBy('name')->get(),
+            'departments' => Department::query()->active()->orderBy('name')->get(['id', 'name', 'is_active']),
             'preselectedDoctor' => $preselectedDoctor,
             'weeklySlots' => $weeklySlots,
         ]);

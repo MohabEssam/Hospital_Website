@@ -26,8 +26,6 @@ class Appointment extends Model
         'treatment',
         'notes',
         'fee',
-        'type',
-        'reference_id',
         'phone_number',
         'confirmation_email_sent_at',
     ];

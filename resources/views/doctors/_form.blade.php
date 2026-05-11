@@ -3,10 +3,7 @@
     <label class="form-label small fw-semibold">Full Name</label>
     <input type="text" name="name" class="form-control" value="{{ old('name', $doctor->name) }}" required>
   </div>
-  <div class="col-md-6">
-    <label class="form-label small fw-semibold">Doctor ID</label>
-    <input type="text" name="doctor_code" class="form-control" value="{{ old('doctor_code', $doctor->doctor_code) }}" placeholder="WNH-GM-001">
-  </div>
+
   <div class="col-md-6">
     <label class="form-label small fw-semibold">Department</label>
     <select name="department_id" class="form-select" required>
