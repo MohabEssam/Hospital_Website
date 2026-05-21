@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRouteKeyColumns;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class PatientCareService extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRouteKeyColumns;
+
+    /** @var array<int, string> */
+    public const ROUTE_COLUMNS = ['id', 'slug'];
 
     protected $fillable = [
         'name',
@@ -73,7 +77,7 @@ class PatientCareService extends Model
                 ->where('slug', $slug)
                 ->exists()
         ) {
-            $slug = $base . '-' . $suffix++;
+            $slug = $base.'-'.$suffix++;
         }
 
         return $slug;

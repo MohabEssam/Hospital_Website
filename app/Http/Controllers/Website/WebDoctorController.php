@@ -23,8 +23,7 @@ class WebDoctorController extends Controller
     public function index(Request $request): View
     {
         $doctors = Doctor::query()
-            ->select([
-                'id',
+            ->select(Doctor::columnsFor([
                 'department_id',
                 'name',
                 'specialty',
@@ -35,7 +34,7 @@ class WebDoctorController extends Controller
                 'avatar',
                 'years_of_experience',
                 'rating',
-            ])
+            ]))
             ->with('department:id,name')
             ->when(
                 $request->filled('department_id'),

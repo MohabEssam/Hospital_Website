@@ -56,6 +56,10 @@
                 <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Delete this patient?')">Delete Patient</button>
               </form>
             </div>
+          @elseif (auth()->user()->isDoctor())
+            <div class="d-grid gap-2 mt-4">
+              <a href="{{ route('patients.clinical-records.create', $patient) }}" class="btn btn-dark btn-sm">Create Clinical Record</a>
+            </div>
           @endif
         </div>
       </div>
@@ -100,8 +104,13 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-semibold mb-0">Appointment History</h6>
-            @if (auth()->user()->isAdmin())
-              <a href="{{ route('appointments.create', ['patient_id' => $patient->id]) }}" class="btn btn-dark btn-sm">Book Appointment</a>
+            @if (auth()->user()->isAdmin() || auth()->user()->isDoctor())
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('patients.clinical-records.create', $patient) }}" class="btn btn-outline-dark btn-sm">New Diagnosis</a>
+                @if (auth()->user()->isAdmin())
+                  <a href="{{ route('appointments.create', ['patient_id' => $patient->id]) }}" class="btn btn-dark btn-sm">Book Appointment</a>
+                @endif
+              </div>
             @endif
           </div>
 

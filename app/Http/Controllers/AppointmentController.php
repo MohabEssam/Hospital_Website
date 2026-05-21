@@ -46,8 +46,8 @@ class AppointmentController extends Controller
                     'treatment',
                 ])
                 ->with([
-                    'patient:id,name',
-                    'doctor:id,name,department_id',
+                    Patient::relationConstraint('patient', ['name']),
+                    Doctor::relationConstraint('doctor', ['name', 'department_id']),
                     'doctor.department:id,name',
                     'department:id,name',
                 ]),
@@ -61,7 +61,7 @@ class AppointmentController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'html'  => view('appointments._table_rows', ['appointments' => $appointments])->render(),
+                'html' => view('appointments._table_rows', ['appointments' => $appointments])->render(),
                 'count' => $appointments->total(),
             ]);
         }
@@ -87,7 +87,7 @@ class AppointmentController extends Controller
     public function create(Request $request): View
     {
         return view('appointments.create', [
-            'appointment' => new Appointment(),
+            'appointment' => new Appointment,
             'patients' => $this->assignablePatients($request->user()),
             'doctors' => $this->assignableDoctors($request->user()),
             'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
@@ -117,9 +117,9 @@ class AppointmentController extends Controller
 
         return view('appointments.show', [
             'appointment' => $appointment->load([
-                'patient:id,name,doctor_id,email,phone',
-                'patient.doctor:id,name,department_id',
-                'doctor:id,name,department_id',
+                Patient::relationConstraint('patient', ['name', 'doctor_id', 'email', 'phone']),
+                'patient.'.Doctor::relationConstraint('doctor', ['name', 'department_id']),
+                Doctor::relationConstraint('doctor', ['name', 'department_id']),
                 'doctor.department:id,name',
                 'department:id,name',
             ]),
@@ -216,9 +216,9 @@ class AppointmentController extends Controller
     private function dispatchConfirmationEmail(Appointment $appointment): void
     {
         $appointment->loadMissing([
-            'patient:id,user_id,email,name',
+            Patient::relationConstraint('patient', ['user_id', 'email', 'name']),
             'patient.user:id,email',
-            'doctor:id,name,specialty',
+            Doctor::relationConstraint('doctor', ['name', 'specialty']),
         ]);
 
         // Idempotency guard — already sent before.
@@ -334,25 +334,25 @@ class AppointmentController extends Controller
     private function assignableDoctors(User $user)
     {
         if ($user->isDoctor() && $user->doctorProfile) {
-            return Doctor::query()->whereKey($user->doctorProfile->getKey())->get(['id', 'name']);
+            return Doctor::query()->whereKey($user->doctorProfile->getKey())->get(Doctor::columnsFor(['name']));
         }
 
         if ($user->isPatient()) {
             return Doctor::query()
                 ->where('availability_status', Doctor::STATUS_AVAILABLE)
                 ->orderBy('name')
-                ->get(['id', 'name']);
+                ->get(Doctor::columnsFor(['name']));
         }
 
-        return Doctor::query()->orderBy('name')->get(['id', 'name']);
+        return Doctor::query()->orderBy('name')->get(Doctor::columnsFor(['name']));
     }
 
     private function assignablePatients(User $user)
     {
         if ($user->isPatient() && $user->patientProfile) {
-            return Patient::query()->whereKey($user->patientProfile->getKey())->get(['id', 'name']);
+            return Patient::query()->whereKey($user->patientProfile->getKey())->get(Patient::columnsFor(['name']));
         }
 
-        return Patient::query()->orderBy('name')->get(['id', 'name']);
+        return Patient::query()->orderBy('name')->get(Patient::columnsFor(['name']));
     }
 }

@@ -34,7 +34,7 @@ class PatientController extends Controller
                 'status',
             ])
             ->with([
-                'doctor:id,name,department_id',
+                Doctor::relationConstraint('doctor', ['name', 'department_id']),
                 'doctor.department:id,name',
             ])
             ->withCount('appointments')
@@ -82,7 +82,7 @@ class PatientController extends Controller
 
         return view('patients.index', [
             'patients' => $patients,
-            'doctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
+            'doctors' => Doctor::query()->orderBy('name')->get(Doctor::columnsFor(['name'])),
             'treatmentOptions' => $this->visiblePatientsQuery($request->user())
                 ->whereNotNull('treatment')
                 ->select('treatment')
@@ -99,8 +99,8 @@ class PatientController extends Controller
     public function create(): View
     {
         return view('patients.create', [
-            'doctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
-            'patient' => new Patient(),
+            'doctors' => Doctor::query()->orderBy('name')->get(Doctor::columnsFor(['name'])),
+            'patient' => new Patient,
         ]);
     }
 
@@ -124,12 +124,12 @@ class PatientController extends Controller
         abort_unless($this->canView($patient, auth()->user()), 403);
 
         $patient->load([
-            'doctor:id,name,department_id',
+            Doctor::relationConstraint('doctor', ['name', 'department_id']),
             'doctor.department:id,name',
             'appointments' => fn ($query) => $query
                 ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'treatment', 'status'])
                 ->with([
-                    'doctor:id,name,department_id',
+                    Doctor::relationConstraint('doctor', ['name', 'department_id']),
                     'doctor.department:id,name',
                 ]),
         ]);
@@ -147,9 +147,11 @@ class PatientController extends Controller
      */
     public function edit(Patient $patient): View
     {
+        abort_unless($this->canView($patient, auth()->user()), 403);
+
         return view('patients.edit', [
             'patient' => $patient->load('doctor'),
-            'doctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
+            'doctors' => Doctor::query()->orderBy('name')->get(Doctor::columnsFor(['name'])),
         ]);
     }
 
@@ -158,6 +160,7 @@ class PatientController extends Controller
      */
     public function update(UpdatePatientRequest $request, Patient $patient): RedirectResponse
     {
+        abort_unless($this->canView($patient, auth()->user()), 403);
         $patient->update($request->validated());
 
         return redirect()
@@ -170,6 +173,7 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient): RedirectResponse
     {
+        abort_unless($this->canView($patient, auth()->user()), 403);
         $patient->delete();
 
         return redirect()
@@ -199,7 +203,15 @@ class PatientController extends Controller
     private function canView(Patient $patient, User $user): bool
     {
         return $user->isAdmin()
-            || ($user->isDoctor() && $patient->doctor_id === $user->doctorProfile?->getKey())
+            || (
+                $user->isDoctor()
+                && (
+                    $patient->doctor_id === $user->doctorProfile?->getKey()
+                    || $patient->appointments()
+                        ->where('doctor_id', $user->doctorProfile?->getKey())
+                        ->exists()
+                )
+            )
             || ($user->isPatient() && $patient->user_id === $user->getKey());
     }
 }

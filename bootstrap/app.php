@@ -26,6 +26,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('patient.dashboard');
             }
 
+            if ($user && $user->role === 'lab') {
+                return route('lab.dashboard');
+            }
+
+            if ($user && $user->role === 'scan_center') {
+                return route('scan-center.dashboard');
+            }
+
+            if ($user && $user->role === 'pharmacy') {
+                return route('pharmacy.dashboard');
+            }
+
             return route('dashboard');
         });
         $middleware->alias([

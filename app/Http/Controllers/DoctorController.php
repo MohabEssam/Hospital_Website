@@ -87,7 +87,7 @@ class DoctorController extends Controller
     public function create(): View
     {
         return view('doctors.create', [
-            'doctor' => new Doctor(),
+            'doctor' => new Doctor,
             'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -101,7 +101,7 @@ class DoctorController extends Controller
 
         if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')
-                ->storeAs('doctors', time() . '_' . $request->file('avatar')->getClientOriginalName(), 'public');
+                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
         }
 
         $password = 'Dr@'.strtoupper(Str::random(3)).rand(100, 999);
@@ -125,9 +125,9 @@ class DoctorController extends Controller
             ->with(
                 'success',
                 "✅ Doctor account created successfully!\n".
-                "📧 Email: ".$request->email."\n".
-                "🔑 Password: ".$password."\n".
-                "⚠️ Please share these credentials with the doctor securely."
+                '📧 Email: '.$request->email."\n".
+                '🔑 Password: '.$password."\n".
+                '⚠️ Please share these credentials with the doctor securely.'
             );
     }
 
@@ -142,7 +142,7 @@ class DoctorController extends Controller
         $recentAppointments = Appointment::query()
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient:id,name,status')
+            ->with(Patient::relationConstraint('patient', ['name', 'status']))
             ->orderByDesc('appointment_date')
             ->orderBy('start_time')
             ->take(4)
@@ -171,7 +171,7 @@ class DoctorController extends Controller
         $todaySchedule = Appointment::query()
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient:id,name,status')
+            ->with(Patient::relationConstraint('patient', ['name', 'status']))
             ->whereDate('appointment_date', today())
             ->orderBy('start_time')
             ->get();
@@ -201,7 +201,7 @@ class DoctorController extends Controller
         $appointments = Appointment::query()
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
             ->whereBelongsTo($doctor)
-            ->with('patient:id,name,status')
+            ->with(Patient::relationConstraint('patient', ['name', 'status']))
             ->whereBetween('appointment_date', [
                 $calendarDate->copy()->startOfMonth()->toDateString(),
                 $calendarDate->copy()->endOfMonth()->toDateString(),
@@ -215,7 +215,7 @@ class DoctorController extends Controller
             'doctor' => $doctor,
             'calendarDate' => $calendarDate,
             'appointmentsByDate' => $appointments,
-            'allDoctors' => Doctor::query()->orderBy('name')->get(['id', 'name']),
+            'allDoctors' => Doctor::query()->orderBy('name')->get(Doctor::columnsFor(['name'])),
             'weeklySchedules' => $doctor->schedules->groupBy('day_of_week'),
         ]);
     }
@@ -287,7 +287,7 @@ class DoctorController extends Controller
             }
 
             $data['avatar'] = $request->file('avatar')
-                ->storeAs('doctors', time() . '_' . $request->file('avatar')->getClientOriginalName(), 'public');
+                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
         }
 
         $doctor->update($data);

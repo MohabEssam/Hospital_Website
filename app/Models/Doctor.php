@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRouteKeyColumns;
 use Carbon\Carbon;
+use Database\Factories\DoctorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,10 +13,14 @@ use Illuminate\Support\Str;
 
 class Doctor extends Model
 {
-    /** @use HasFactory<\Database\Factories\DoctorFactory> */
-    use HasFactory;
+    /** @use HasFactory<DoctorFactory> */
+    use HasFactory, HasRouteKeyColumns;
+
+    /** @var array<int, string> */
+    public const ROUTE_COLUMNS = ['id', 'doctor_code'];
 
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_UNAVAILABLE = 'unavailable';
 
     protected $fillable = [
@@ -52,9 +58,14 @@ class Doctor extends Model
             }
 
             if (blank($doctor->doctor_code)) {
-                $doctor->doctor_code = static::buildDoctorCode($doctor->getKey());
+                $doctor->doctor_code = static::publicCodeForUser($doctor) ?? static::buildDoctorCode($doctor->getKey());
             }
         });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'doctor_code';
     }
 
     /**
@@ -91,6 +102,26 @@ class Doctor extends Model
     public function patients(): HasMany
     {
         return $this->hasMany(Patient::class);
+    }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class);
+    }
+
+    public function labRequests(): HasMany
+    {
+        return $this->hasMany(LabRequest::class);
+    }
+
+    public function scanRequests(): HasMany
+    {
+        return $this->hasMany(ScanRequest::class);
+    }
+
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
     }
 
     public function isAvailable(): bool
@@ -141,7 +172,7 @@ class Doctor extends Model
         $next = (static::max('id') ?? 0) + 1;
 
         do {
-            $code = 'DOC-'.str_pad((string) $next++, 4, '0', STR_PAD_LEFT);
+            $code = 'DR-'.$next++;
         } while (
             static::query()
                 ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
@@ -150,5 +181,20 @@ class Doctor extends Model
         );
 
         return $code;
+    }
+
+    protected static function publicCodeForUser(Doctor $doctor): ?string
+    {
+        $publicId = $doctor->user_id
+            ? User::query()->whereKey($doctor->user_id)->value('public_id')
+            : null;
+
+        if (! is_string($publicId) || ! str_starts_with($publicId, 'DR-')) {
+            return null;
+        }
+
+        return static::query()->where('doctor_code', $publicId)->exists()
+            ? null
+            : $publicId;
     }
 }

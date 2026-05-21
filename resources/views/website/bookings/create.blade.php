@@ -155,19 +155,25 @@
               <span class="bk-field-error" id="errSlot"></span>
 
               <div id="slotsContainer">
-                @if($preselectedDoctor && $weeklySlots->isNotEmpty())
+                @php
+                  $hasBookableSlots = $preselectedDoctor && $weeklySlots->contains(
+                    fn ($day) => $day['slots']->contains(fn ($slot) => $slot['available']),
+                  );
+                @endphp
+                @if($hasBookableSlots)
                   <div class="bk-slots-area">
                     @foreach($weeklySlots as $day)
-                      @php $d = $day['date']; $slots = $day['slots']; @endphp
-                      @if($slots->isNotEmpty())
+                      @php
+                        $d = $day['date'];
+                        $bookableSlots = $day['slots']->where('available', true);
+                      @endphp
+                      @if($bookableSlots->isNotEmpty())
                         <div class="bk-day-row">
                           <div class="bk-day-label">{{ $d->format('l') }} <small>{{ $d->format('M d, Y') }}</small></div>
                           <div class="bk-slots-grid">
-                            @foreach($slots as $slot)
-                              <button type="button" class="bk-slot {{ !$slot['available'] ? '' : '' }}"
-                                data-date="{{ $d->toDateString() }}" data-time="{{ $slot['time'] }}"
-                                {{ $slot['available'] ? '' : 'disabled' }}
-                                title="{{ $slot['reason'] ?? '' }}">
+                            @foreach($bookableSlots as $slot)
+                              <button type="button" class="bk-slot"
+                                data-date="{{ $d->toDateString() }}" data-time="{{ $slot['time'] }}">
                                 {{ $slot['label'] }}
                               </button>
                             @endforeach
@@ -176,6 +182,8 @@
                       @endif
                     @endforeach
                   </div>
+                @elseif($preselectedDoctor)
+                  <p class="bk-no-slots">No open appointment slots in the next 7 days for this doctor.</p>
                 @else
                   <p class="bk-no-slots" id="noSlotsMsg">Select a doctor above to see available slots.</p>
                 @endif
@@ -273,6 +281,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+  const slotsApiBase = @json(url('/api/doctors'));
   const deptFilter=document.getElementById('department_filter'),
     docSelect=document.getElementById('doctor_id'),
     hiddenDate=document.getElementById('hiddenDate'),
@@ -320,29 +329,50 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   function hidePreview(){preview.classList.add('hidden');st.doctor='';st.dept='';st.fee='';updateSidebar();}
 
-  // Load slots via AJAX
+  function slotsUrlFor(doctorId){
+    return slotsApiBase+'/'+encodeURIComponent(doctorId)+'/slots';
+  }
+
+  function renderSlots(data){
+    const days=data.days||[];
+    const hasBookable=days.some(day=>(day.slots||[]).some(s=>s.available));
+    if(!hasBookable){
+      slotsContainer.innerHTML='<p class="bk-no-slots">'+(data.message||'No available slots for this doctor in the next 7 days.')+'</p>';
+      return;
+    }
+    let html='<div class="bk-slots-area">';
+    days.forEach(day=>{
+      const bookable=(day.slots||[]).filter(s=>s.available);
+      if(bookable.length===0)return;
+      html+='<div class="bk-day-row"><div class="bk-day-label">'+day.date_label+'</div><div class="bk-slots-grid">';
+      bookable.forEach(s=>{
+        const value=s.value||s.time;
+        html+='<button type="button" class="bk-slot" data-date="'+day.date+'" data-time="'+value+'">'+s.label+'</button>';
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    slotsContainer.innerHTML=html;
+    bindSlots();
+  }
+
+  // Load slots via AJAX (same schedule source as doctor dashboard)
   function loadSlots(doctorId){
     st.date='';st.time='';st.timeLabel='';hiddenDate.value='';hiddenTime.value='';
     slotsContainer.innerHTML='<p class="bk-slots-loading"><i class="bi bi-arrow-repeat"></i> Loading available slots...</p>';
-    fetch('/api/doctors/'+doctorId+'/slots',{headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}})
-      .then(r=>r.json())
-      .then(data=>{
-        if(!data.days||data.days.length===0){slotsContainer.innerHTML='<p class="bk-no-slots">No available slots for this doctor.</p>';return;}
-        let html='<div class="bk-slots-area">';
-        data.days.forEach(day=>{
-          if(!day.slots||day.slots.length===0)return;
-          html+='<div class="bk-day-row"><div class="bk-day-label">'+day.date_label+'</div><div class="bk-slots-grid">';
-          day.slots.forEach(s=>{
-            const dis=!s.available;
-            html+='<button type="button" class="bk-slot" data-date="'+day.date+'" data-time="'+s.time+'"'+(dis?' disabled title="'+(s.reason||'Unavailable')+'"':'')+'>'+s.label+'</button>';
-          });
-          html+='</div></div>';
-        });
-        html+='</div>';
-        slotsContainer.innerHTML=html;
-        bindSlots();
+    fetch(slotsUrlFor(doctorId),{
+      headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
+      credentials:'same-origin',
+    })
+      .then(async r=>{
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(data.message||'Could not load slots.');
+        return data;
       })
-      .catch(()=>{slotsContainer.innerHTML='<p class="bk-no-slots">Failed to load slots. Please try again.</p>';});
+      .then(renderSlots)
+      .catch(err=>{
+        slotsContainer.innerHTML='<p class="bk-no-slots">'+(err.message||'Failed to load slots. Please try again.')+'</p>';
+      });
   }
 
   // Bind slot clicks

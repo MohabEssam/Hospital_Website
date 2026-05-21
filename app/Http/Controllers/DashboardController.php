@@ -146,7 +146,7 @@ class DashboardController extends Controller
             ->get();
 
         $topDoctors = Doctor::query()
-            ->select(['id', 'department_id', 'name', 'availability_status'])
+            ->select(['id', 'doctor_code', 'department_id', 'name', 'availability_status'])
             ->with('department:id,name')
             ->withCount(['patients', 'appointments'])
             ->orderByDesc('appointments_count')
@@ -156,8 +156,8 @@ class DashboardController extends Controller
         $recentAppointments = (clone $appointmentsQuery)
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'status', 'treatment'])
             ->with([
-                'patient:id,name',
-                'doctor:id,name',
+                Patient::relationConstraint('patient', ['name']),
+                Doctor::relationConstraint('doctor', ['name']),
             ])
             ->orderByDesc('appointment_date')
             ->orderBy('start_time')
@@ -167,8 +167,8 @@ class DashboardController extends Controller
         $todaySchedule = (clone $appointmentsQuery)
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'status', 'treatment'])
             ->with([
-                'patient:id,name',
-                'doctor:id,name',
+                Patient::relationConstraint('patient', ['name']),
+                Doctor::relationConstraint('doctor', ['name']),
             ])
             ->whereDate('appointment_date', today())
             ->orderBy('start_time')
@@ -345,6 +345,6 @@ class DashboardController extends Controller
 
         return redirect()
             ->route('dashboard')
-            ->with('status', 'Availability updated to ' . ucfirst($doctor->availability_status) . '.');
+            ->with('status', 'Availability updated to '.ucfirst($doctor->availability_status).'.');
     }
 }

@@ -69,13 +69,11 @@ class PatientFactory extends Factory
 
                     return (int) ($matches[1] ?? 0);
                 })
-                ->max() ?? 14;
-
-            static::$patientCodeCounter = max(static::$patientCodeCounter, 14);
+                ->max() ?? 0;
         }
 
         do {
-            $code = 'PAT-'.str_pad((string) ++static::$patientCodeCounter, 4, '0', STR_PAD_LEFT);
+            $code = 'PAT-'.++static::$patientCodeCounter;
         } while (Patient::query()->where('patient_code', $code)->exists());
 
         return $code;

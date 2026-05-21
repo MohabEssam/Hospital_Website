@@ -14,6 +14,7 @@
     <div>
       <p class="mb-0 text-muted small">Doctor Dashboard</p>
       <h4 class="fw-bold mb-0">Welcome, {{ $doctor->name }}</h4>
+      <p class="mb-0 text-muted small">Doctor ID: {{ $doctor->doctor_code }}</p>
     </div>
     <a href="{{ route('doctors.schedule', $doctor) }}" class="btn btn-dark btn-sm">
       <i class="fas fa-calendar-day me-1"></i> My Schedule

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Patient;
 use App\Services\DoctorScheduleService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class DoctorDashboardController extends Controller
 
         $upcomingAppointments = $doctor->appointments()
             ->select(['id', 'patient_id', 'doctor_id', 'appointment_date', 'start_time', 'end_time', 'status', 'treatment'])
-            ->with('patient:id,name')
+            ->with(Patient::relationConstraint('patient', ['name']))
             ->whereDate('appointment_date', '>=', today())
             ->where('status', '!=', Appointment::STATUS_CANCELLED)
             ->orderBy('appointment_date')

@@ -22,9 +22,9 @@ return new class extends Migration
         });
 
         DB::table('appointments')
-            ->join('doctors', 'doctors.id', '=', 'appointments.doctor_id')
+            ->whereNull('department_id')
             ->update([
-                'appointments.department_id' => DB::raw('doctors.department_id'),
+                'department_id' => DB::raw('(select department_id from doctors where doctors.id = appointments.doctor_id)'),
             ]);
     }
 

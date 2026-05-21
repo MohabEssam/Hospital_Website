@@ -11,7 +11,14 @@ class LabController extends Controller
     public function index(): View
     {
         return view('website.labs.index', [
-            'labs' => Lab::query()->get(['id', 'name', 'slug', 'description', 'phone', 'address', 'work_hours', 'image']),
+            'labs' => Lab::query()->get(Lab::columnsFor([
+                'name',
+                'description',
+                'phone',
+                'address',
+                'work_hours',
+                'image',
+            ])),
         ]);
     }
 

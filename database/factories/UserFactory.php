@@ -64,4 +64,35 @@ class UserFactory extends Factory
             'role' => User::ROLE_PATIENT,
         ]);
     }
+
+    public function labStaff(): static
+    {
+        return $this->lab();
+    }
+
+    public function lab(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_LAB,
+        ]);
+    }
+
+    public function scanStaff(): static
+    {
+        return $this->scanCenter();
+    }
+
+    public function scanCenter(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_SCAN_CENTER,
+        ]);
+    }
+
+    public function pharmacy(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_PHARMACY,
+        ]);
+    }
 }

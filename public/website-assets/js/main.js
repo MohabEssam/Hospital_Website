@@ -113,6 +113,10 @@
    * Animation on scroll function and init
    */
   function aosInit() {
+    if (typeof AOS === 'undefined') {
+      return;
+    }
+
     AOS.init({
       duration: 600,
       easing: 'ease-in-out',

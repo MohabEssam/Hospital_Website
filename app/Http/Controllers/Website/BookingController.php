@@ -69,7 +69,7 @@ class BookingController extends Controller
                 'fee',
             ])
             ->with([
-                'doctor:id,name,department_id,specialty',
+                Doctor::relationConstraint('doctor', ['name', 'department_id', 'specialty']),
                 'doctor.department:id,name',
             ]);
 
@@ -95,8 +95,7 @@ class BookingController extends Controller
     public function create(Request $request): View
     {
         $doctors = Doctor::query()
-            ->select([
-                'id',
+            ->select(Doctor::columnsFor([
                 'department_id',
                 'name',
                 'specialty',
@@ -105,7 +104,7 @@ class BookingController extends Controller
                 'avatar',
                 'years_of_experience',
                 'rating',
-            ])
+            ]))
             ->with('department:id,name')
             ->where('availability_status', Doctor::STATUS_AVAILABLE)
             ->orderBy('name')
@@ -213,16 +212,47 @@ class BookingController extends Controller
 
     public function slots(Request $request, Doctor $doctor): JsonResponse
     {
+        abort_unless($request->user()?->isPatient(), 403);
+
+        if (! $doctor->isAvailable()) {
+            return response()->json([
+                'doctor_id' => $doctor->getKey(),
+                'available' => false,
+                'message' => 'This doctor is not currently accepting appointments.',
+                'days' => [],
+            ]);
+        }
+
         $this->scheduleService->seedDefaultSchedule($doctor);
         $weeklySlots = $this->scheduleService->weeklySlots($doctor);
 
         $formatted = $weeklySlots->map(fn (array $day) => [
             'date' => $day['date']->toDateString(),
             'date_label' => $day['date']->format('D, M d'),
-            'slots' => $day['slots']->values()->all(),
+            'slots' => $day['slots']
+                ->map(fn (array $slot) => [
+                    'time' => $slot['label'],
+                    'value' => $slot['time'],
+                    'label' => $slot['label'],
+                    'available' => $slot['available'],
+                    'reason' => $slot['reason'],
+                ])
+                ->values()
+                ->all(),
         ])->values();
 
-        return response()->json(['days' => $formatted]);
+        $hasAvailable = $formatted->contains(
+            fn (array $day) => collect($day['slots'])->contains(fn (array $slot) => $slot['available']),
+        );
+
+        return response()->json([
+            'doctor_id' => $doctor->getKey(),
+            'available' => $hasAvailable,
+            'message' => $hasAvailable
+                ? null
+                : 'No open appointment slots in the next week. Try another doctor or check back later.',
+            'days' => $formatted,
+        ]);
     }
 
     public function cancel(Request $request, Appointment $appointment): RedirectResponse

@@ -81,6 +81,11 @@
   @auth
     @if(auth()->user()->isPatient())
         <li>
+            <a href="{{ route('patient.dashboard') }}" class="{{ request()->routeIs('patient.*') ? 'active' : '' }}">
+                Patient Portal
+            </a>
+        </li>
+        <li>
             <a href="{{ route('my-bookings') }}" class="{{ request()->routeIs('my-bookings') ? 'active' : '' }}">
                 My Bookings
             </a>
@@ -161,6 +166,7 @@
             <li><a href="{{ route('my-bookings') }}">My Bookings</a></li>
             @auth
               @if(auth()->user()->isPatient())
+                <li><a href="{{ route('patient.dashboard') }}">Patient Portal</a></li>
                 <li><a href="{{ route('website.book') }}">Book Appointment</a></li>
               @endif
             @endauth

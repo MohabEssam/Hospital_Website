@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRouteKeyColumns;
+use Database\Factories\PatientFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,11 +12,16 @@ use Illuminate\Support\Str;
 
 class Patient extends Model
 {
-    /** @use HasFactory<\Database\Factories\PatientFactory> */
-    use HasFactory;
+    /** @use HasFactory<PatientFactory> */
+    use HasFactory, HasRouteKeyColumns;
+
+    /** @var array<int, string> */
+    public const ROUTE_COLUMNS = ['id', 'patient_code'];
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_NEW = 'new_patient';
+
     public const STATUS_INACTIVE = 'inactive';
 
     protected $fillable = [
@@ -49,9 +56,14 @@ class Patient extends Model
     {
         static::creating(function (Patient $patient): void {
             if (blank($patient->patient_code)) {
-                $patient->patient_code = static::buildPatientCode();
+                $patient->patient_code = static::publicCodeForUser($patient) ?? static::buildPatientCode();
             }
         });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'patient_code';
     }
 
     /**
@@ -79,6 +91,36 @@ class Patient extends Model
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(Diagnosis::class);
+    }
+
+    public function labRequests(): HasMany
+    {
+        return $this->hasMany(LabRequest::class);
+    }
+
+    public function labResults(): HasMany
+    {
+        return $this->hasMany(LabResult::class);
+    }
+
+    public function scanRequests(): HasMany
+    {
+        return $this->hasMany(ScanRequest::class);
+    }
+
+    public function scanResults(): HasMany
+    {
+        return $this->hasMany(ScanResult::class);
+    }
+
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class);
     }
 
     public function age(): ?int
@@ -120,9 +162,24 @@ class Patient extends Model
         $next = (static::max('id') ?? 0) + 1;
 
         do {
-            $code = 'PAT-'.str_pad((string) $next++, 4, '0', STR_PAD_LEFT);
+            $code = 'PAT-'.$next++;
         } while (static::where('patient_code', $code)->exists());
 
         return $code;
+    }
+
+    protected static function publicCodeForUser(Patient $patient): ?string
+    {
+        $publicId = $patient->user_id
+            ? User::query()->whereKey($patient->user_id)->value('public_id')
+            : null;
+
+        if (! is_string($publicId) || ! str_starts_with($publicId, 'PAT-')) {
+            return null;
+        }
+
+        return static::query()->where('patient_code', $publicId)->exists()
+            ? null
+            : $publicId;
     }
 }

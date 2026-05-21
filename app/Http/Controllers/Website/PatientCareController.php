@@ -17,7 +17,15 @@ class PatientCareController extends Controller
             'services' => PatientCareService::query()
                 ->active()
                 ->orderBy('sort_order')
-                ->get(['id', 'name', 'slug', 'description', 'image', 'icon_class', 'is_bookable', 'is_active', 'sort_order']),
+                ->get(PatientCareService::columnsFor([
+                    'name',
+                    'description',
+                    'image',
+                    'icon_class',
+                    'is_bookable',
+                    'is_active',
+                    'sort_order',
+                ])),
         ]);
     }
 
@@ -26,7 +34,7 @@ class PatientCareController extends Controller
         $allServices = PatientCareService::query()
             ->active()
             ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug', 'icon_class']);
+            ->get(PatientCareService::columnsFor(['name', 'icon_class']));
 
         return view('website.patient-care.show', [
             'service' => $service,
@@ -50,6 +58,6 @@ class PatientCareController extends Controller
 
         return redirect()
             ->route('website.patient-care.show', $service)
-            ->with('status', 'Your booking for ' . $service->name . ' has been submitted successfully. We will confirm it shortly.');
+            ->with('status', 'Your booking for '.$service->name.' has been submitted successfully. We will confirm it shortly.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\Doctor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +34,7 @@ class WebDepartmentController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'html'  => view('website.departments._grid', ['departments' => $departments])->render(),
+                'html' => view('website.departments._grid', ['departments' => $departments])->render(),
                 'count' => $departments->count(),
             ]);
         }
@@ -48,19 +49,25 @@ class WebDepartmentController extends Controller
     {
         $department->load(['doctors' => function ($query) {
             $query
-                ->select(['id', 'department_id', 'name', 'specialty', 'availability_status', 'avatar'])
+                ->select(Doctor::columnsFor([
+                    'department_id',
+                    'name',
+                    'specialty',
+                    'availability_status',
+                    'avatar',
+                ]))
                 ->orderBy('name');
         }]);
 
         $allDepartments = Department::query()
-            ->select(['id', 'name', 'slug', 'is_active','icon'])
+            ->select(['id', 'name', 'slug', 'is_active', 'icon'])
             ->active()
             ->withCount('doctors')
             ->orderBy('name')
             ->get();
 
         return view('website.departments.show', [
-            'department'     => $department,
+            'department' => $department,
             'allDepartments' => $allDepartments,
         ]);
     }

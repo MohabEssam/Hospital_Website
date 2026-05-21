@@ -100,7 +100,7 @@
                 </div>
                 <div class="col-6">
                   <label class="form-label small fw-semibold">Doctor ID</label>
-                  <input type="text" class="form-control form-control-sm" name="doctor_code" value="{{ old('quick_form') === 'doctor' ? old('doctor_code') : '' }}" placeholder="WNH-XX-001">
+                  <input type="text" class="form-control form-control-sm" name="doctor_code" value="{{ old('quick_form') === 'doctor' ? old('doctor_code') : '' }}" placeholder="DR-1">
                 </div>
                 <div class="col-6">
                   <label class="form-label small fw-semibold">Department</label>

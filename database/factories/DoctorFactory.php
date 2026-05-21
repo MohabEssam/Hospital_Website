@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  */
 class DoctorFactory extends Factory
 {
-    protected static array $doctorCodeCounters = [];
+    protected static ?int $doctorCodeCounter = null;
 
     /**
      * Define the model's default state.
@@ -30,7 +30,6 @@ class DoctorFactory extends Factory
         }
 
         $name = 'Dr. '.fake()->name();
-        $profile = $this->departmentProfile($department);
         $avatarColumn = Schema::hasColumn('doctors', 'avatar') ? 'avatar' : 'avatar_path';
 
         return [
@@ -38,14 +37,14 @@ class DoctorFactory extends Factory
             'department_id' => $department->id,
             'name' => $name,
             'slug' => Str::slug($name).'-'.uniqid(),
-            'doctor_code' => $this->nextDoctorCode($profile['code']),
+            'doctor_code' => $this->nextDoctorCode(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'specialty' => fake()->randomElement($profile['specialties']),
+            'specialty' => fake()->randomElement($this->departmentProfile($department)['specialties']),
             'biography' => fake()->paragraph(),
             'address' => fake()->address(),
             'availability_status' => fake()->randomElement(Doctor::availabilityOptions()),
-            'consultation_fee' => fake()->numberBetween($profile['fee'][0], $profile['fee'][1]),
+            'consultation_fee' => fake()->numberBetween($this->departmentProfile($department)['fee'][0], $this->departmentProfile($department)['fee'][1]),
             $avatarColumn => 'assets/images/profile/user-1.jpg',
             'years_of_experience' => fake()->numberBetween(3, 20),
         ];
@@ -64,18 +63,18 @@ class DoctorFactory extends Factory
         };
     }
 
-    private function nextDoctorCode(string $departmentCode): string
+    private function nextDoctorCode(): string
     {
-        if (! array_key_exists($departmentCode, static::$doctorCodeCounters)) {
-            static::$doctorCodeCounters[$departmentCode] = Doctor::query()
-                ->where('doctor_code', 'like', "WNH-{$departmentCode}-%")
+        if (static::$doctorCodeCounter === null) {
+            static::$doctorCodeCounter = Doctor::query()
+                ->where('doctor_code', 'like', 'DR-%')
                 ->pluck('doctor_code')
                 ->map(fn (string $code) => (int) Str::afterLast($code, '-'))
                 ->max() ?? 0;
         }
 
         do {
-            $code = sprintf('WNH-%s-%03d', $departmentCode, ++static::$doctorCodeCounters[$departmentCode]);
+            $code = 'DR-'.++static::$doctorCodeCounter;
         } while (Doctor::query()->where('doctor_code', $code)->exists());
 
         return $code;

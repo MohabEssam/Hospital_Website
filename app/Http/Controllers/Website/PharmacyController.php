@@ -11,7 +11,13 @@ class PharmacyController extends Controller
     public function index(): View
     {
         return view('website.pharmacies.index', [
-            'pharmacies' => Pharmacy::query()->get(['id', 'name', 'slug', 'description', 'phone', 'address', 'image']),
+            'pharmacies' => Pharmacy::query()->get(Pharmacy::columnsFor([
+                'name',
+                'description',
+                'phone',
+                'address',
+                'image',
+            ])),
         ]);
     }
 

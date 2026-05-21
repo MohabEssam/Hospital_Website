@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Patient;
 use App\Models\ServiceBooking;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +25,7 @@ class ServiceBookingController extends Controller
                 'status',
             ])
             ->with([
-                'patient:id,user_id,name',
+                Patient::relationConstraint('patient', ['user_id', 'name']),
                 'patient.user:id,email',
                 'service:id,name',
             ]);
@@ -63,6 +64,6 @@ class ServiceBookingController extends Controller
 
         return redirect()
             ->back()
-            ->with('status', 'Service booking ' . $validated['status'] . ' successfully.');
+            ->with('status', 'Service booking '.$validated['status'].' successfully.');
     }
 }

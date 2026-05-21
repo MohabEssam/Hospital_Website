@@ -11,7 +11,13 @@ class HospitalController extends Controller
     public function index(): View
     {
         return view('website.hospitals.index', [
-            'hospitals' => Hospital::query()->get(['id', 'name', 'slug', 'description', 'phone', 'address', 'image']),
+            'hospitals' => Hospital::query()->get(Hospital::columnsFor([
+                'name',
+                'description',
+                'phone',
+                'address',
+                'image',
+            ])),
         ]);
     }
 

@@ -19,8 +19,7 @@ class HomeController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug', 'icon', 'is_active']),
             'doctors' => Doctor::query()
-                ->select([
-                    'id',
+                ->select(Doctor::columnsFor([
                     'department_id',
                     'name',
                     'specialty',
@@ -31,7 +30,7 @@ class HomeController extends Controller
                     'avatar',
                     'years_of_experience',
                     'rating',
-                ])
+                ]))
                 ->with('department:id,name')
                 ->where('availability_status', Doctor::STATUS_AVAILABLE)
                 ->orderBy('name')
@@ -44,7 +43,14 @@ class HomeController extends Controller
             'patientCareServices' => PatientCareService::query()
                 ->active()
                 ->orderBy('sort_order')
-                ->get(['id', 'name', 'slug', 'description', 'image', 'icon_class', 'is_active', 'sort_order']),
+                ->get(PatientCareService::columnsFor([
+                    'name',
+                    'description',
+                    'image',
+                    'icon_class',
+                    'is_active',
+                    'sort_order',
+                ])),
         ]);
     }
 }

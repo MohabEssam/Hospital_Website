@@ -26,11 +26,19 @@
                     $profileUrl = route('doctors.show', auth()->user()->doctorProfile);
                 } elseif (auth()->user()->isPatient() && auth()->user()->patientProfile) {
                     $profileUrl = route('patients.show', auth()->user()->patientProfile);
+                } elseif (auth()->user()->isLab()) {
+                    $profileUrl = route('lab.dashboard');
+                } elseif (auth()->user()->isScanCenter()) {
+                    $profileUrl = route('scan-center.dashboard');
+                } elseif (auth()->user()->isPharmacy()) {
+                    $profileUrl = route('pharmacy.dashboard');
                 }
               @endphp
 
               <a href="{{ $profileUrl }}" class="d-flex align-items-center gap-2 dropdown-item"><i class="ti ti-user fs-6"></i><p class="mb-0 fs-3">My Profile</p></a>
-              <a href="{{ route('appointments.index') }}" class="d-flex align-items-center gap-2 dropdown-item"><i class="ti ti-mail fs-6"></i><p class="mb-0 fs-3">My Appointments</p></a>
+              @if(auth()->user()->isAdmin() || auth()->user()->isDoctor())
+                <a href="{{ route('appointments.index') }}" class="d-flex align-items-center gap-2 dropdown-item"><i class="ti ti-mail fs-6"></i><p class="mb-0 fs-3">My Appointments</p></a>
+              @endif
               <div class="px-3 py-2">
                 <p class="mb-1 fw-semibold small">{{ auth()->user()->name }}</p>
                 <p class="mb-0 text-muted small text-capitalize">{{ auth()->user()->role }}</p>

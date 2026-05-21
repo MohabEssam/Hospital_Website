@@ -1,0 +1,274 @@
+.portal-shell {
+  background: #f6f8fb;
+  padding-top: 120px;
+}
+
+.portal-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px 64px;
+}
+
+.portal-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+
+.portal-kicker {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.portal-title {
+  color: #172033;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.portal-code {
+  color: #5b677a;
+  margin-top: 8px;
+}
+
+.portal-actions,
+.portal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.portal-btn {
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1e293b;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  text-decoration: none;
+}
+
+.portal-btn.is-primary,
+.portal-btn:hover {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.portal-tabs {
+  margin-bottom: 24px;
+}
+
+.portal-card,
+.portal-record,
+.portal-section-block {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .05);
+}
+
+.portal-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.portal-card {
+  padding: 18px;
+}
+
+.portal-stat {
+  color: #172033;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.portal-label {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.portal-section-block {
+  margin-bottom: 18px;
+  padding: 22px;
+}
+
+.portal-section-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.portal-section-head h2 {
+  color: #172033;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.portal-muted {
+  color: #64748b;
+}
+
+.portal-info-list {
+  display: grid;
+  gap: 12px;
+}
+
+.portal-info-list span {
+  color: #64748b;
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.portal-info-list strong {
+  color: #172033;
+  display: block;
+  font-size: 15px;
+  margin-top: 2px;
+}
+
+.portal-records {
+  display: grid;
+  gap: 12px;
+}
+
+.portal-record {
+  padding: 16px;
+}
+
+.portal-record-top {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.portal-record h3 {
+  color: #172033;
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.portal-meta {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.portal-status {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.portal-status.is-pending {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.portal-status.is-completed,
+.portal-status.is-dispensed,
+.portal-status.is-final,
+.portal-status.is-active {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.portal-status.is-cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.portal-note {
+  color: #334155;
+  margin: 12px 0 0;
+}
+
+.portal-files,
+.portal-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.portal-file-link {
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  color: #0f766e;
+  font-weight: 700;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.portal-image-link img {
+  aspect-ratio: 4 / 3;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  object-fit: cover;
+  width: 160px;
+}
+
+.portal-empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  padding: 18px;
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  .portal-top,
+  .portal-grid,
+  .portal-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 575px) {
+  .portal-shell {
+    padding-top: 96px;
+  }
+
+  .portal-title {
+    font-size: 26px;
+  }
+
+  .portal-record-top {
+    flex-direction: column;
+  }
+}

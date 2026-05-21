@@ -10,13 +10,24 @@ use Illuminate\Support\Collection;
 
 class DoctorScheduleService
 {
+    public const SLOT_DURATION_MINUTES = 30;
+
     /**
      * @return Collection<int, array{date: Carbon, slots: Collection<int, array{time: string, label: string, available: bool, reason: string|null}>}>
      */
-    public function weeklySlots(Doctor $doctor, ?Carbon $startDate = null, int $days = 6): Collection
+    public function weeklySlots(Doctor $doctor, ?Carbon $startDate = null, int $days = 7): Collection
     {
+        if (! $doctor->isAvailable()) {
+            return collect();
+        }
+
         $startDate ??= today();
         $doctor->loadMissing('schedules');
+
+        if ($doctor->schedules->where('is_available', true)->isEmpty()) {
+            $this->seedDefaultSchedule($doctor);
+            $doctor->load('schedules');
+        }
 
         $appointments = Appointment::query()
             ->whereBelongsTo($doctor)
@@ -32,25 +43,17 @@ class DoctorScheduleService
             $date = $startDate->copy()->addDays($offset);
             $bookedTimes = $appointments
                 ->get($date->toDateString(), collect())
-                ->pluck('start_time')
-                ->map(fn (string $time) => Carbon::parse($time)->format('H:i'))
+                ->map(fn (Appointment $appointment) => $this->normalizeTime((string) $appointment->start_time))
                 ->all();
 
             $slots = $doctor->schedules
                 ->where('day_of_week', $date->dayOfWeek)
+                ->where('is_available', true)
                 ->sortBy('start_time')
-                ->values()
-                ->map(function (DoctorSchedule $schedule) use ($bookedTimes): array {
-                    $time = Carbon::parse($schedule->start_time)->format('H:i');
-                    $isBooked = in_array($time, $bookedTimes, true);
-
-                    return [
-                        'time' => $time,
-                        'label' => Carbon::parse($schedule->start_time)->format('g:i A'),
-                        'available' => $schedule->is_available && ! $isBooked,
-                        'reason' => ! $schedule->is_available ? 'Unavailable' : ($isBooked ? 'Booked' : null),
-                    ];
-                });
+                ->flatMap(fn (DoctorSchedule $schedule) => $this->generateSlotsFromSchedule($schedule, $bookedTimes, $date))
+                ->unique('time')
+                ->sortBy('time')
+                ->values();
 
             return [
                 'date' => $date,
@@ -59,22 +62,49 @@ class DoctorScheduleService
         });
     }
 
+    /**
+     * @return array<int, array{time: string, label: string, available: bool, reason: string|null}>
+     */
+    public function generateSlotsFromSchedule(DoctorSchedule $schedule, array $bookedTimes, Carbon $date): array
+    {
+        $slots = [];
+        $cursor = Carbon::parse($schedule->start_time);
+        $windowEnd = Carbon::parse($schedule->end_time);
+
+        while ($cursor->copy()->addMinutes(self::SLOT_DURATION_MINUTES)->lte($windowEnd)) {
+            $time = $cursor->format('H:i');
+            $isPast = $date->isToday() && $time <= now()->format('H:i');
+            $isBooked = in_array($time, $bookedTimes, true);
+
+            $slots[] = [
+                'time' => $time,
+                'label' => $cursor->format('g:i A'),
+                'available' => ! $isPast && ! $isBooked,
+                'reason' => $isPast ? 'Past' : ($isBooked ? 'Booked' : null),
+            ];
+
+            $cursor->addMinutes(self::SLOT_DURATION_MINUTES);
+        }
+
+        return $slots;
+    }
+
     public function slotIsAvailable(Doctor $doctor, string $date, string $startTime): bool
     {
-        $dayOfWeek = Carbon::parse($date)->dayOfWeek;
-        $normalizedTime = Carbon::createFromFormat('H:i', $startTime)->format('H:i:s');
+        if (! $doctor->isAvailable()) {
+            return false;
+        }
 
-        return $doctor->schedules()
-            ->where('day_of_week', $dayOfWeek)
-            ->where('start_time', $normalizedTime)
-            ->where('is_available', true)
-            ->exists();
+        $endTime = Carbon::createFromFormat('H:i', $startTime)
+            ->addMinutes(self::SLOT_DURATION_MINUTES)
+            ->format('H:i');
+
+        return $this->rangeWithinSchedule($doctor, $date, $startTime, $endTime);
     }
 
     /**
      * Check if the requested appointment window fits entirely inside any
      * available weekly schedule block for that doctor on that weekday.
-     * Returns true if doctor has no schedule defined (fallback: allow).
      */
     public function rangeWithinSchedule(Doctor $doctor, string $date, string $startTime, string $endTime): bool
     {
@@ -86,7 +116,6 @@ class DoctorScheduleService
             ->where('is_available', true)
             ->get();
 
-        // If no weekly schedule is defined at all, don't block (backward compat).
         if ($schedules->isEmpty()) {
             return ! $doctor->schedules()->exists();
         }
@@ -120,10 +149,15 @@ class DoctorScheduleService
                 $doctor->schedules()->create([
                     'day_of_week' => $dayOfWeek,
                     'start_time' => $slot,
-                    'end_time' => Carbon::createFromFormat('H:i', $slot)->addMinutes(30)->format('H:i'),
+                    'end_time' => Carbon::createFromFormat('H:i', $slot)->addMinutes(self::SLOT_DURATION_MINUTES)->format('H:i'),
                     'is_available' => true,
                 ]);
             }
         }
+    }
+
+    private function normalizeTime(string $time): string
+    {
+        return Carbon::parse($time)->format('H:i');
     }
 }

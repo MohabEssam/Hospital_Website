@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
 use App\Models\Department;
+use App\Models\Doctor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +32,7 @@ class DepartmentController extends Controller
     public function create(): View
     {
         return view('departments.create', [
-            'department' => new Department(),
+            'department' => new Department,
         ]);
     }
 
@@ -55,14 +56,12 @@ class DepartmentController extends Controller
     {
         $department->load([
             'doctors' => fn ($query) => $query
-                ->select([
-                    'id',
+                ->select(Doctor::columnsFor([
                     'department_id',
                     'name',
-                    'doctor_code',
                     'specialty',
                     'availability_status',
-                ])
+                ]))
                 ->withCount(['patients', 'appointments'])
                 ->orderBy('name'),
         ]);
