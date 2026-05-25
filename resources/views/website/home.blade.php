@@ -6,7 +6,7 @@
 
     <!-- Hero Section -->
     <section id="hero" class="hero hero-video-section section" aria-label="Medicare Hospital introduction">
-      <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" poster="{{ asset('website-assets/img/hero.jpg') }}">
+      <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" poster="{{ asset('website-assets/img/medicare.png') }}">
         <source src="{{ asset('videos/CHUVTTV_TEASER.mp4') }}" type="video/mp4">
       </video>
       <div class="hero-video-overlay" aria-hidden="true"></div>
