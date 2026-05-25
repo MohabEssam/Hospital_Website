@@ -28,6 +28,18 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        if ($user->isLab()) {
+            return $this->redirectStaffToDashboard($request, 'lab.dashboard');
+        }
+
+        if ($user->isScanCenter()) {
+            return $this->redirectStaffToDashboard($request, 'scan-center.dashboard');
+        }
+
+        if ($user->isPharmacy()) {
+            return $this->redirectStaffToDashboard($request, 'pharmacy.dashboard');
+        }
+
         if ($user->isDoctor()) {
             return redirect()->intended(route('dashboard'));
         }
@@ -37,6 +49,26 @@ class AuthenticatedSessionController extends Controller
         }
 
         return redirect()->intended(route('dashboard'));
+    }
+
+    private function redirectStaffToDashboard(Request $request, string $routeName): RedirectResponse
+    {
+        $dashboardUrl = route($routeName);
+        $intendedUrl = $request->session()->pull('url.intended');
+
+        if (is_string($intendedUrl) && $this->urlsHaveSamePath($intendedUrl, $dashboardUrl)) {
+            return redirect()->to($intendedUrl);
+        }
+
+        return redirect()->to($dashboardUrl);
+    }
+
+    private function urlsHaveSamePath(string $firstUrl, string $secondUrl): bool
+    {
+        $firstPath = parse_url($firstUrl, PHP_URL_PATH) ?: '/';
+        $secondPath = parse_url($secondUrl, PHP_URL_PATH) ?: '/';
+
+        return rtrim($firstPath, '/') === rtrim($secondPath, '/');
     }
 
     public function destroy(Request $request): RedirectResponse
