@@ -80,6 +80,7 @@ class HospitalSeeder extends Seeder
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@medicare.test',
+            'phone' => '+1 555-100-0000',
             'password' => Hash::make('password'),
             'role' => User::ROLE_ADMIN,
             'email_verified_at' => now(),
@@ -88,6 +89,7 @@ class HospitalSeeder extends Seeder
         $doctorUser = User::create([
             'name' => 'Dr. Petra Winsburry',
             'email' => 'doctor@medicare.test',
+            'phone' => '+1 555-234-5678',
             'password' => Hash::make('password'),
             'role' => User::ROLE_DOCTOR,
             'email_verified_at' => now(),
@@ -96,6 +98,7 @@ class HospitalSeeder extends Seeder
         $patientUser = User::create([
             'name' => 'Caren G. Simpson',
             'email' => 'patient@medicare.test',
+            'phone' => '+1 555-000-1000',
             'password' => Hash::make('password'),
             'role' => User::ROLE_PATIENT,
             'email_verified_at' => now(),

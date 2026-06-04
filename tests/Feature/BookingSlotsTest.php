@@ -38,7 +38,7 @@ class BookingSlotsTest extends TestCase
         $patientUser = User::factory()->patient()->create();
         $patient = Patient::factory()->create(['user_id' => $patientUser->getKey()]);
 
-        $date = today()->next('Monday');
+        $date = today()->addDay();
         $dayOfWeek = $date->dayOfWeek;
 
         DoctorSchedule::query()->create([
@@ -95,7 +95,7 @@ class BookingSlotsTest extends TestCase
 
         DoctorSchedule::query()->create([
             'doctor_id' => $doctor->getKey(),
-            'day_of_week' => today()->dayOfWeek,
+            'day_of_week' => today()->addDay()->dayOfWeek,
             'start_time' => '09:00',
             'end_time' => '12:00',
             'is_available' => true,

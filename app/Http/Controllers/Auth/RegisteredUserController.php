@@ -22,6 +22,8 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
+            'phone' => $request->validated('phone'),
+            'gender' => $request->validated('gender'),
             'password' => $request->validated('password'),
             'role' => User::ROLE_PATIENT,
         ]);
@@ -30,6 +32,8 @@ class RegisteredUserController extends Controller
             'user_id' => $user->getKey(),
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $request->validated('phone'),
+            'gender' => ucfirst($request->validated('gender')),
             'age' => $request->validated('age'),
             'status' => Patient::STATUS_NEW,
             'check_in_date' => today(),

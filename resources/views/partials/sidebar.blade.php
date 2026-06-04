@@ -6,6 +6,7 @@
     auth()->user()?->isLab() => route('lab.dashboard'),
     auth()->user()?->isScanCenter() => route('scan-center.dashboard'),
     auth()->user()?->isPharmacy() => route('pharmacy.dashboard'),
+    auth()->user()?->isReception() => route('reception.dashboard'),
     default => route('dashboard'),
   };
 @endphp
@@ -28,7 +29,11 @@
 @if(auth()->user()?->isAdmin())
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}"><span><i class="fas fa-building"></i></span><span class="hide-menu">Departments</span></a></li>
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('staff-users.*') ? 'active' : '' }}" href="{{ route('staff-users.index') }}"><span><i class="fas fa-users-gear"></i></span><span class="hide-menu">Staff Users</span></a></li>
+<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('reception.*') ? 'active' : '' }}" href="{{ route('reception.dashboard') }}"><span><i class="fas fa-magnifying-glass"></i></span><span class="hide-menu">Patient Lookup</span></a></li>
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('service-bookings.*') ? 'active' : '' }}" href="{{ route('service-bookings.index') }}"><span><i class="fas fa-concierge-bell"></i></span><span class="hide-menu">Service Bookings</span></a></li>
+@endif
+@if(auth()->user()?->isReception())
+<li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('reception.*') ? 'active' : '' }}" href="{{ route('reception.dashboard') }}"><span><i class="fas fa-magnifying-glass"></i></span><span class="hide-menu">Patient Lookup</span></a></li>
 @endif
 @if(auth()->user()?->isDoctor() && auth()->user()->doctorProfile)
 <li class="sidebar-item"><a class="sidebar-link {{ request()->routeIs('doctors.schedule') ? 'active' : '' }}" href="{{ route('doctors.schedule', auth()->user()->doctorProfile) }}"><span><i class="fas fa-calendar-day"></i></span><span class="hide-menu">My Schedule</span></a></li>

@@ -16,6 +16,10 @@
         <div class="portal-code">Patient ID: <strong>{{ $patient->patient_code }}</strong></div>
       </div>
       <div class="portal-actions">
+        <button class="portal-btn" type="button" data-copy-patient-id="{{ $patient->patient_code }}"><i class="bi bi-copy"></i> Copy Patient ID</button>
+        <a class="portal-btn" href="{{ route('patient.medical-card.download') }}"><i class="bi bi-download"></i> Download Medical Card</a>
+        <a class="portal-btn" href="#patient-qr-code"><i class="bi bi-qr-code"></i> Show QR Code</a>
+        <a class="portal-btn" href="{{ route('patient.medical-card.show') }}"><i class="bi bi-printer"></i> Print Card</a>
         <a class="portal-btn is-primary" href="{{ route('patient.results') }}"><i class="bi bi-clipboard2-pulse"></i> Results</a>
         <a class="portal-btn" href="{{ route('my-bookings') }}"><i class="bi bi-calendar2-check"></i> Bookings</a>
       </div>
@@ -35,15 +39,23 @@
 
     <div class="portal-grid">
       <aside>
-        <div class="portal-section-block">
+        <div class="portal-section-block" id="patient-qr-code">
           <div class="portal-section-head"><h2>Personal Information</h2></div>
           <div class="portal-info-list">
+            <div><span>Patient ID</span><strong>{{ $patient->patient_code }}</strong></div>
             <div><span>Email</span><strong>{{ $patient->email ?? 'Not recorded' }}</strong></div>
             <div><span>Phone</span><strong>{{ $patient->phone ?? 'Not recorded' }}</strong></div>
             <div><span>Date of birth</span><strong>{{ $patient->date_of_birth?->format('M d, Y') ?? 'Not recorded' }}</strong></div>
             <div><span>Age</span><strong>{{ $patient->age() ?? 'Not recorded' }}</strong></div>
             <div><span>Gender</span><strong>{{ $patient->gender ?? 'Not recorded' }}</strong></div>
             <div><span>Primary doctor</span><strong>{{ $patient->doctor?->name ?? 'Not assigned' }}</strong></div>
+          </div>
+        </div>
+        <div class="portal-section-block">
+          <div class="portal-section-head"><h2>QR Code</h2></div>
+          <div class="portal-qr-card">
+            {!! $qrSvg !!}
+            <p class="portal-muted mb-0">QR contains {{ $patient->patient_code }}</p>
           </div>
         </div>
       </aside>
@@ -159,3 +171,24 @@
   </div>
 </section>
 @endsection
+
+@push('scripts')
+  <script>
+    document.querySelectorAll('[data-copy-patient-id]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(button.dataset.copyPatientId);
+        } else {
+          const fallback = document.createElement('input');
+          fallback.value = button.dataset.copyPatientId;
+          document.body.appendChild(fallback);
+          fallback.select();
+          document.execCommand('copy');
+          fallback.remove();
+        }
+        button.classList.add('is-primary');
+        setTimeout(() => button.classList.remove('is-primary'), 1200);
+      });
+    });
+  </script>
+@endpush

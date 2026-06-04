@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['public_id', 'name', 'email', 'email_verified_at', 'password', 'role', 'remember_token'])]
+#[Fillable(['public_id', 'name', 'email', 'phone', 'gender', 'email_verified_at', 'password', 'role', 'remember_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,6 +28,12 @@ class User extends Authenticatable
     public const ROLE_PHARMACY = 'pharmacy';
 
     public const ROLE_SCAN_CENTER = 'scan_center';
+
+    public const ROLE_RECEPTION = 'reception';
+
+    public const GENDER_MALE = 'male';
+
+    public const GENDER_FEMALE = 'female';
 
     protected static function booted(): void
     {
@@ -63,6 +69,18 @@ class User extends Authenticatable
             self::ROLE_PHARMACY,
             self::ROLE_LAB,
             self::ROLE_SCAN_CENTER,
+            self::ROLE_RECEPTION,
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function genders(): array
+    {
+        return [
+            self::GENDER_MALE,
+            self::GENDER_FEMALE,
         ];
     }
 
@@ -119,6 +137,11 @@ class User extends Authenticatable
         return $this->hasRole(self::ROLE_PHARMACY);
     }
 
+    public function isReception(): bool
+    {
+        return $this->hasRole(self::ROLE_RECEPTION);
+    }
+
     public function isLabStaff(): bool
     {
         return $this->isLab();
@@ -138,6 +161,7 @@ class User extends Authenticatable
             self::ROLE_LAB => 'LAB',
             self::ROLE_PHARMACY => 'PH',
             self::ROLE_SCAN_CENTER => 'SCAN',
+            self::ROLE_RECEPTION => 'REC',
             default => 'USR',
         };
     }

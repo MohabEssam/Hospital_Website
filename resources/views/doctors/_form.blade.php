@@ -23,7 +23,7 @@
   </div>
   <div class="col-md-6">
     <label class="form-label small fw-semibold">Phone</label>
-    <input type="text" name="phone" class="form-control" value="{{ old('phone', $doctor->phone) }}">
+    <input type="tel" name="phone" class="form-control" value="{{ old('phone', $doctor->phone) }}" required minlength="7" maxlength="20" autocomplete="tel">
   </div>
   <div class="col-md-4">
     <label class="form-label small fw-semibold">Availability</label>

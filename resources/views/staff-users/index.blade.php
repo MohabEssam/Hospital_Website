@@ -17,6 +17,8 @@
             <th class="small text-muted fw-semibold">Public ID</th>
             <th class="small text-muted fw-semibold">Name</th>
             <th class="small text-muted fw-semibold">Email</th>
+            <th class="small text-muted fw-semibold">Phone</th>
+            <th class="small text-muted fw-semibold">Gender</th>
             <th class="small text-muted fw-semibold">Role</th>
             <th class="small text-muted fw-semibold">Created</th>
           </tr>
@@ -27,11 +29,13 @@
               <td class="fw-semibold">{{ $user->public_id }}</td>
               <td>{{ $user->name }}</td>
               <td class="text-muted small">{{ $user->email }}</td>
+              <td class="text-muted small">{{ $user->phone ?? 'Not recorded' }}</td>
+              <td class="text-capitalize">{{ $user->gender ?? 'Not recorded' }}</td>
               <td><span class="badge bg-dark text-capitalize">{{ str($user->role)->replace('_', ' ') }}</span></td>
               <td class="small text-muted">{{ $user->created_at?->format('d M Y') }}</td>
             </tr>
           @empty
-            <tr><td colspan="5" class="text-center text-muted py-4 small">No staff users found.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4 small">No staff users found.</td></tr>
           @endforelse
         </tbody>
       </table>

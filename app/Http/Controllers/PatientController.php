@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\QrCodeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,8 @@ class PatientController extends Controller
                 'doctor_id',
                 'name',
                 'patient_code',
+                'email',
+                'phone',
                 'date_of_birth',
                 'age',
                 'check_in_date',
@@ -59,6 +62,8 @@ class PatientController extends Controller
                     $nested
                         ->where('name', 'like', "%{$term}%")
                         ->orWhere('patient_code', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%")
+                        ->orWhere('email', 'like', "%{$term}%")
                         ->orWhere('treatment', 'like', "%{$term}%")
                         ->orWhereHas('doctor', fn (Builder $doctorQuery) => $doctorQuery->where('name', 'like', "%{$term}%"));
                 }),
@@ -119,7 +124,7 @@ class PatientController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Patient $patient): View
+    public function show(Patient $patient, QrCodeService $qrCode): View
     {
         abort_unless($this->canView($patient, auth()->user()), 403);
 
@@ -136,6 +141,7 @@ class PatientController extends Controller
 
         return view('patients.show', [
             'patient' => $patient,
+            'qrSvg' => $qrCode->svg($patient->patient_code, 4),
             'appointments' => $patient->appointments->sortByDesc(
                 fn ($appointment) => $appointment->appointment_date?->format('Y-m-d').$appointment->start_time,
             ),
@@ -203,6 +209,7 @@ class PatientController extends Controller
     private function canView(Patient $patient, User $user): bool
     {
         return $user->isAdmin()
+            || $user->isReception()
             || (
                 $user->isDoctor()
                 && (

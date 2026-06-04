@@ -10,6 +10,8 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorDashboardController;
 use App\Http\Controllers\LabCenterController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PatientLookupController;
+use App\Http\Controllers\PatientMedicalCardController;
 use App\Http\Controllers\PatientPortalController;
 use App\Http\Controllers\PharmacyCenterController;
 use App\Http\Controllers\ScanCenterController;
@@ -68,12 +70,17 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::get('/patients/lookup/search', [PatientLookupController::class, 'search'])
+        ->middleware('throttle:60,1')
+        ->name('patients.lookup.search');
 
     // --- Patient: booking via website ---
     Route::middleware('role:patient')->group(function (): void {
         Route::get('/patient', fn () => redirect()->route('patient.dashboard'))->name('patient.home');
         Route::get('/patient/dashboard', [PatientPortalController::class, 'dashboard'])->name('patient.dashboard');
         Route::get('/patient/results', [PatientPortalController::class, 'results'])->name('patient.results');
+        Route::get('/patient/medical-card', [PatientMedicalCardController::class, 'show'])->name('patient.medical-card.show');
+        Route::get('/patient/medical-card/download', [PatientMedicalCardController::class, 'download'])->name('patient.medical-card.download');
         Route::get('/patient/lab-results/{labResult}/files/{file}', [PatientPortalController::class, 'labResultFile'])
             ->whereNumber('file')
             ->name('patient.lab-results.files');
@@ -117,6 +124,13 @@ Route::middleware('auth')->group(function (): void {
     });
     Route::redirect('/pharmacy-center', '/pharmacy/dashboard')->name('pharmacy-center.index');
 
+    Route::middleware('role:admin,reception')->prefix('reception')->name('reception.')->group(function (): void {
+        Route::get('/dashboard', [PatientLookupController::class, 'index'])->name('dashboard');
+        Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+        Route::get('/patients/{patient}/medical-card', [PatientMedicalCardController::class, 'showForStaff'])->name('patients.medical-card.show');
+        Route::get('/patients/{patient}/medical-card/download', [PatientMedicalCardController::class, 'downloadForStaff'])->name('patients.medical-card.download');
+    });
+
     // --- Dashboard routes (admin & doctor only) ---
     Route::middleware('role:admin,doctor')->prefix('dashboard')->group(function (): void {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -137,6 +151,8 @@ Route::middleware('auth')->group(function (): void {
 
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+        Route::get('/patients/{patient}/medical-card', [PatientMedicalCardController::class, 'showForStaff'])->name('patients.medical-card.show');
+        Route::get('/patients/{patient}/medical-card/download', [PatientMedicalCardController::class, 'downloadForStaff'])->name('patients.medical-card.download');
         Route::get('/patients/{patient}/clinical-records/create', [ClinicalRecordController::class, 'create'])->name('patients.clinical-records.create');
         Route::post('/patients/{patient}/clinical-records', [ClinicalRecordController::class, 'store'])->name('patients.clinical-records.store');
 

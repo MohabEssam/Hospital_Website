@@ -110,6 +110,7 @@ class DoctorController extends Controller
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $request->email,
+                'phone' => $data['phone'],
                 'password' => bcrypt($password),
                 'role' => User::ROLE_DOCTOR,
             ]);
@@ -290,7 +291,13 @@ class DoctorController extends Controller
                 ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
         }
 
-        $doctor->update($data);
+        DB::transaction(function () use ($doctor, $data): void {
+            $doctor->update($data);
+
+            $doctor->user?->update([
+                'phone' => $data['phone'],
+            ]);
+        });
 
         return redirect()
             ->route('doctors.show', $doctor)

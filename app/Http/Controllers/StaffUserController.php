@@ -18,6 +18,7 @@ class StaffUserController extends Controller
                     User::ROLE_LAB,
                     User::ROLE_PHARMACY,
                     User::ROLE_SCAN_CENTER,
+                    User::ROLE_RECEPTION,
                 ])
                 ->orderBy('role')
                 ->orderBy('name')
@@ -33,6 +34,7 @@ class StaffUserController extends Controller
                 User::ROLE_LAB => 'Lab',
                 User::ROLE_PHARMACY => 'Pharmacy',
                 User::ROLE_SCAN_CENTER => 'Scan Center',
+                User::ROLE_RECEPTION => 'Reception',
             ],
         ]);
     }

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreScanResultRequest;
 use App\Models\Doctor;
-use App\Models\Patient;
 use App\Models\ScanRequest;
 use App\Models\ScanResult;
+use App\Services\PatientLookupService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,13 +14,19 @@ use Illuminate\Support\Facades\DB;
 
 class ScanCenterController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, PatientLookupService $lookup): View
     {
-        $patient = $this->findPatient($request);
+        $patient = $lookup->find(
+            $request->user(),
+            PatientLookupService::CONTEXT_SCAN,
+            (string) $request->string('patient_code'),
+            (string) $request->string('patient_search'),
+        );
 
         return view('scan-center.index', [
             'patient' => $patient,
             'patientCode' => (string) $request->string('patient_code'),
+            'patientSearch' => (string) $request->string('patient_search'),
             'scanRequests' => $patient
                 ? $patient->scanRequests()
                     ->with([
@@ -68,16 +74,5 @@ class ScanCenterController extends Controller
         });
 
         return back()->with('status', 'Scan result saved successfully.');
-    }
-
-    private function findPatient(Request $request): ?Patient
-    {
-        if (! $request->filled('patient_code')) {
-            return null;
-        }
-
-        return Patient::query()
-            ->where('patient_code', (string) $request->string('patient_code'))
-            ->first();
     }
 }

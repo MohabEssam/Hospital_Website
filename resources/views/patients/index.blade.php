@@ -98,7 +98,7 @@
       <input type="hidden" name="treatment" value="{{ $filters['treatment'] ?? '' }}">
       <input type="hidden" name="sort" value="{{ $filters['sort'] ?? '' }}">
       <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-      <input type="text" class="form-control border-start-0 shadow-none" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search name, ID, doctor...">
+      <input type="text" class="form-control border-start-0 shadow-none" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search ID, name, phone, email, doctor...">
     </form>
 
     <div class="dropdown">

@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+  @php
+    $medicalCardShowRoute = auth()->user()->isReception()
+      ? route('reception.patients.medical-card.show', $patient)
+      : route('patients.medical-card.show', $patient);
+    $medicalCardDownloadRoute = auth()->user()->isReception()
+      ? route('reception.patients.medical-card.download', $patient)
+      : route('patients.medical-card.download', $patient);
+  @endphp
+
   <div class="d-flex align-items-center gap-3 mb-4">
     <a href="{{ route('patients.index') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 lh-1">
       <i class="fas fa-arrow-left"></i>
@@ -22,6 +31,10 @@
           <h5 class="fw-bold mb-0">{{ $patient->name }}</h5>
           <p class="text-muted small mb-2">{{ $patient->patient_code }}</p>
           <span class="badge bg-dark px-3 py-2 mb-3">{{ str($patient->status)->replace('_', ' ')->title() }}</span>
+
+          <div class="d-flex justify-content-center mb-3">
+            {!! $qrSvg !!}
+          </div>
 
           <hr>
 
@@ -49,6 +62,8 @@
 
           @if (auth()->user()->isAdmin())
             <div class="d-grid gap-2 mt-4">
+              <a href="{{ $medicalCardShowRoute }}" class="btn btn-outline-dark btn-sm">Print Medical Card</a>
+              <a href="{{ $medicalCardDownloadRoute }}" class="btn btn-outline-dark btn-sm">Download Medical Card</a>
               <a href="{{ route('patients.edit', $patient) }}" class="btn btn-dark btn-sm">Edit Patient</a>
               <form action="{{ route('patients.destroy', $patient) }}" method="POST">
                 @csrf
@@ -58,7 +73,13 @@
             </div>
           @elseif (auth()->user()->isDoctor())
             <div class="d-grid gap-2 mt-4">
+              <a href="{{ $medicalCardShowRoute }}" class="btn btn-outline-dark btn-sm">Print Medical Card</a>
               <a href="{{ route('patients.clinical-records.create', $patient) }}" class="btn btn-dark btn-sm">Create Clinical Record</a>
+            </div>
+          @elseif (auth()->user()->isReception())
+            <div class="d-grid gap-2 mt-4">
+              <a href="{{ $medicalCardShowRoute }}" class="btn btn-outline-dark btn-sm">Print Medical Card</a>
+              <a href="{{ $medicalCardDownloadRoute }}" class="btn btn-outline-dark btn-sm">Download Medical Card</a>
             </div>
           @endif
         </div>

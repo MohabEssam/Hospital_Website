@@ -32,8 +32,10 @@
                     $profileUrl = route('scan-center.dashboard');
                 } elseif (auth()->user()->isPharmacy()) {
                     $profileUrl = route('pharmacy.dashboard');
+                } elseif (auth()->user()->isReception()) {
+                    $profileUrl = route('reception.dashboard');
                 }
-              @endphp
+            @endphp
 
               <a href="{{ $profileUrl }}" class="d-flex align-items-center gap-2 dropdown-item"><i class="ti ti-user fs-6"></i><p class="mb-0 fs-3">My Profile</p></a>
               @if(auth()->user()->isAdmin() || auth()->user()->isDoctor())

@@ -37,6 +37,40 @@
     </div>
 
     <div class="mb-3">
+      <label for="phone" class="form-label">Phone Number</label>
+      <input
+        type="tel"
+        class="form-control @error('phone') is-invalid @enderror"
+        id="phone"
+        name="phone"
+        value="{{ old('phone') }}"
+        required
+        minlength="7"
+        maxlength="20"
+        autocomplete="tel"
+        placeholder="Phone number">
+      @error('phone')
+        <div class="invalid-feedback">{{ $message }}</div>
+      @enderror
+    </div>
+
+    <div class="mb-3">
+      <label for="gender" class="form-label">Gender</label>
+      <select
+        class="form-select @error('gender') is-invalid @enderror"
+        id="gender"
+        name="gender"
+        required>
+        <option value="" disabled @selected(! old('gender'))>Select gender</option>
+        <option value="male" @selected(old('gender') === 'male')>Male</option>
+        <option value="female" @selected(old('gender') === 'female')>Female</option>
+      </select>
+      @error('gender')
+        <div class="invalid-feedback">{{ $message }}</div>
+      @enderror
+    </div>
+
+    <div class="mb-3">
       <label for="age" class="form-label">Age</label>
       <input
         type="number"

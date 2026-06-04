@@ -8,6 +8,7 @@ use App\Models\LabResult;
 use App\Models\Patient;
 use App\Models\ScanRequest;
 use App\Models\ScanResult;
+use App\Services\QrCodeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,12 +17,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientPortalController extends Controller
 {
-    public function dashboard(Request $request): View
+    public function dashboard(Request $request, QrCodeService $qrCode): View
     {
         $patient = $this->patientFor($request);
 
         return view('patient-portal.dashboard', [
             'patient' => $patient,
+            'qrSvg' => $qrCode->svg($patient->patient_code, 5),
             'diagnoses' => $patient->diagnoses()
                 ->with(Doctor::relationConstraint('doctor', ['name', 'specialty']))
                 ->orderByDesc('diagnosed_at')

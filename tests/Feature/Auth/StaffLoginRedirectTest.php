@@ -57,6 +57,7 @@ class StaffLoginRedirectTest extends TestCase
             'lab staff' => [fn () => User::factory()->labStaff()->create(), 'lab.dashboard'],
             'scan staff' => [fn () => User::factory()->scanStaff()->create(), 'scan-center.dashboard'],
             'pharmacy staff' => [fn () => User::factory()->pharmacy()->create(), 'pharmacy.dashboard'],
+            'reception staff' => [fn () => User::factory()->reception()->create(), 'reception.dashboard'],
         ];
     }
 }

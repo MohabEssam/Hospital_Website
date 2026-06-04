@@ -6,7 +6,7 @@
       <i class="fas fa-arrow-left"></i>
     </a>
     <div>
-      <p class="mb-0 text-muted small">Create admin, lab, pharmacy, or scan center access</p>
+      <p class="mb-0 text-muted small">Create admin, lab, pharmacy, scan center, or reception access</p>
       <h4 class="fw-bold mb-0">Create Staff User</h4>
     </div>
   </div>
@@ -24,6 +24,20 @@
           <label class="form-label small fw-semibold">Email</label>
           <input type="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" required>
           @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Phone Number</label>
+          <input type="tel" name="phone" value="{{ old('phone') }}" class="form-control @error('phone') is-invalid @enderror" required minlength="7" maxlength="20" autocomplete="tel">
+          @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Gender</label>
+          <select name="gender" class="form-select @error('gender') is-invalid @enderror" required>
+            <option value="" disabled @selected(! old('gender'))>Select gender</option>
+            <option value="male" @selected(old('gender') === 'male')>Male</option>
+            <option value="female" @selected(old('gender') === 'female')>Female</option>
+          </select>
+          @error('gender')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">Role</label>

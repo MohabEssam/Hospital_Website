@@ -27,6 +27,8 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('010########'),
+            'gender' => fake()->randomElement(User::genders()),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => User::ROLE_PATIENT,
@@ -93,6 +95,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => User::ROLE_PHARMACY,
+        ]);
+    }
+
+    public function reception(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_RECEPTION,
         ]);
     }
 }

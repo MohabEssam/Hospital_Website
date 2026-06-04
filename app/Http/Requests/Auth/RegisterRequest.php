@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,6 +29,8 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'phone' => ['required', 'string', 'min:7', 'max:20'],
+            'gender' => ['required', Rule::in(User::genders())],
             'password' => ['required', 'confirmed', Password::defaults()],
             'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
             'age' => ['required_without:date_of_birth', 'nullable', 'integer', 'min:1', 'max:120'],
@@ -46,6 +49,8 @@ class RegisterRequest extends FormRequest
         $this->merge([
             'name' => trim((string) $this->input('name')),
             'email' => strtolower(trim((string) $this->input('email'))),
+            'phone' => trim((string) $this->input('phone')),
+            'gender' => strtolower(trim((string) $this->input('gender'))),
             'age' => $age,
         ]);
     }

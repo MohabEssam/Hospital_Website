@@ -40,6 +40,10 @@ class AuthenticatedSessionController extends Controller
             return $this->redirectStaffToDashboard($request, 'pharmacy.dashboard');
         }
 
+        if ($user->isReception()) {
+            return $this->redirectStaffToDashboard($request, 'reception.dashboard');
+        }
+
         if ($user->isDoctor()) {
             return redirect()->intended(route('dashboard'));
         }

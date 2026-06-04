@@ -29,7 +29,7 @@ class StoreDoctorRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'doctor_code' => ['nullable', 'string', 'max:255', Rule::unique('doctors', 'doctor_code')],
             'email' => ['required', 'email', 'max:255', Rule::unique('doctors', 'email'), Rule::unique('users', 'email')],
-            'phone' => ['nullable', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'min:7', 'max:20'],
             'specialty' => ['required', 'string', 'max:255'],
             'biography' => ['nullable', 'string'],
             'address' => ['nullable', 'string'],
@@ -47,6 +47,7 @@ class StoreDoctorRequest extends FormRequest
             'name' => trim((string) $this->input('name')),
             'doctor_code' => filled($this->input('doctor_code')) ? strtoupper(trim((string) $this->input('doctor_code'))) : null,
             'email' => filled($this->input('email')) ? strtolower(trim((string) $this->input('email'))) : null,
+            'phone' => trim((string) $this->input('phone')),
         ]);
     }
 }

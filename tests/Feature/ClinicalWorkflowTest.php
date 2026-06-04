@@ -13,7 +13,6 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
-
 class ClinicalWorkflowTest extends TestCase
 {
     use LazilyRefreshDatabase;
@@ -136,6 +135,8 @@ class ClinicalWorkflowTest extends TestCase
         $this->actingAs($admin)->post(route('staff-users.store'), [
             'name' => 'Main Lab',
             'email' => 'lab@example.test',
+            'phone' => '01099998888',
+            'gender' => User::GENDER_FEMALE,
             'role' => User::ROLE_LAB,
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -143,6 +144,8 @@ class ClinicalWorkflowTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'lab@example.test',
+            'phone' => '01099998888',
+            'gender' => User::GENDER_FEMALE,
             'role' => User::ROLE_LAB,
             'public_id' => 'LAB-1',
         ]);
