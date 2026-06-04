@@ -298,7 +298,7 @@ class QrCodeService
      */
     private function addFormatInfo(array &$matrix, array &$reserved): void
     {
-        $bits = array_map('intval', str_split('111011111000100'));
+        $bits = array_map('intval', str_split('101010000010010'));
         $positionsA = [[8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 7], [8, 8], [7, 8], [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8]];
         $positionsB = [[self::SIZE - 1, 8], [self::SIZE - 2, 8], [self::SIZE - 3, 8], [self::SIZE - 4, 8], [self::SIZE - 5, 8], [self::SIZE - 6, 8], [self::SIZE - 7, 8], [8, self::SIZE - 8], [8, self::SIZE - 7], [8, self::SIZE - 6], [8, self::SIZE - 5], [8, self::SIZE - 4], [8, self::SIZE - 3], [8, self::SIZE - 2], [8, self::SIZE - 1]];
 
