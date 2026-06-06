@@ -79,19 +79,22 @@ class StoreAppointmentRequest extends FormRequest
                     return;
                 }
 
+                $blocksSlot = in_array((string) $this->input('status'), Appointment::slotBlockingStatuses(), true);
+
                 if (
                     ! $doctor->isAvailable()
-                    && $this->input('status') !== Appointment::STATUS_CANCELLED
+                    && $blocksSlot
                 ) {
                     $validator->errors()->add('doctor_id', 'The selected doctor is currently unavailable.');
                 }
 
-                $hasConflict = app(AppointmentConflictService::class)->hasConflict(
-                    $doctor->getKey(),
-                    (string) $this->input('appointment_date'),
-                    (string) $this->input('start_time'),
-                    (string) $this->input('end_time'),
-                );
+                $hasConflict = $blocksSlot
+                    && app(AppointmentConflictService::class)->hasConflict(
+                        $doctor->getKey(),
+                        (string) $this->input('appointment_date'),
+                        (string) $this->input('start_time'),
+                        (string) $this->input('end_time'),
+                    );
 
                 if ($hasConflict) {
                     $validator->errors()->add('start_time', 'This appointment overlaps with another booking for the selected doctor.');
@@ -106,7 +109,7 @@ class StoreAppointmentRequest extends FormRequest
                     (string) $this->input('end_time'),
                 );
 
-                if (! $withinSchedule && $this->input('status') !== Appointment::STATUS_CANCELLED) {
+                if (! $withinSchedule && $blocksSlot) {
                     $validator->errors()->add('start_time', 'The selected time is outside the doctor\'s weekly schedule.');
                 }
             },

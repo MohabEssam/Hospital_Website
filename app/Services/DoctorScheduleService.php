@@ -31,7 +31,7 @@ class DoctorScheduleService
 
         $appointments = Appointment::query()
             ->whereBelongsTo($doctor)
-            ->where('status', '!=', Appointment::STATUS_CANCELLED)
+            ->whereIn('status', Appointment::slotBlockingStatuses())
             ->whereBetween('appointment_date', [
                 $startDate->copy()->toDateString(),
                 $startDate->copy()->addDays($days - 1)->toDateString(),
