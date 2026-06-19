@@ -41,7 +41,10 @@ class StaffUserController extends Controller
 
     public function store(StoreStaffUserRequest $request): RedirectResponse
     {
-        $user = User::create($request->validated());
+        $validated = $request->validated();
+        $user = new User(collect($validated)->except('role')->all());
+        $user->role = $validated['role'];
+        $user->save();
 
         return redirect()
             ->route('staff-users.index')

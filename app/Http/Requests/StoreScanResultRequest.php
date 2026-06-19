@@ -10,7 +10,9 @@ class StoreScanResultRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user && ($user->isAdmin() || $user->isScanCenter());
     }
 
     /**

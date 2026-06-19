@@ -37,7 +37,9 @@ Route::get('/doctors', [WebDoctorController::class, 'index'])->name('website.doc
 Route::get('/doctors/{doctor}', [WebDoctorController::class, 'show'])->name('website.doctors.show');
 Route::get('/patient-care', [PatientCareController::class, 'index'])->name('website.patient-care');
 Route::get('/patient-care/{service}', [PatientCareController::class, 'show'])->name('website.patient-care.show');
-Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings');
+Route::get('/my-bookings', [BookingController::class, 'myBookings'])
+    ->middleware(['throttle:10,1'])
+    ->name('my-bookings');
 
 /*
 |--------------------------------------------------------------------------

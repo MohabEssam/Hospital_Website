@@ -101,19 +101,20 @@ class DoctorController extends Controller
 
         if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')
-                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
+                ->store('doctors', 'public');
         }
 
         $password = 'Dr@'.strtoupper(Str::random(3)).rand(100, 999);
 
         DB::transaction(function () use ($data, $request, $password): void {
-            $user = User::create([
+            $user = new User([
                 'name' => $data['name'],
                 'email' => $request->email,
                 'phone' => $data['phone'],
                 'password' => bcrypt($password),
-                'role' => User::ROLE_DOCTOR,
             ]);
+            $user->role = User::ROLE_DOCTOR;
+            $user->save();
 
             Doctor::create([
                 ...$data,
@@ -125,10 +126,7 @@ class DoctorController extends Controller
             ->route('doctors.index')
             ->with(
                 'success',
-                "✅ Doctor account created successfully!\n".
-                '📧 Email: '.$request->email."\n".
-                '🔑 Password: '.$password."\n".
-                '⚠️ Please share these credentials with the doctor securely.'
+                'Doctor account created successfully. Credentials have been sent to '.$request->email.'.'
             );
     }
 
@@ -288,7 +286,7 @@ class DoctorController extends Controller
             }
 
             $data['avatar'] = $request->file('avatar')
-                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
+                ->store('doctors', 'public');
         }
 
         DB::transaction(function () use ($doctor, $data): void {

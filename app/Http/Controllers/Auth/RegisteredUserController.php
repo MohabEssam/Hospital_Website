@@ -19,14 +19,15 @@ class RegisteredUserController extends Controller
 
     public function store(RegisterRequest $request): RedirectResponse
     {
-        $user = User::create([
+        $user = new User([
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
             'phone' => $request->validated('phone'),
             'gender' => $request->validated('gender'),
             'password' => $request->validated('password'),
-            'role' => User::ROLE_PATIENT,
         ]);
+        $user->role = User::ROLE_PATIENT;
+        $user->save();
 
         Patient::create([
             'user_id' => $user->getKey(),
