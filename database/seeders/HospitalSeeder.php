@@ -77,7 +77,7 @@ class HospitalSeeder extends Seeder
             return [$department['name'] => $createdDepartment];
         });
 
-        User::create([
+        User::forceCreate([
             'name' => 'Admin User',
             'email' => 'admin@medicare.test',
             'phone' => '+1 555-100-0000',
@@ -86,7 +86,7 @@ class HospitalSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $doctorUser = User::create([
+        $doctorUser = User::forceCreate([
             'name' => 'Dr. Petra Winsburry',
             'email' => 'doctor@medicare.test',
             'phone' => '+1 555-234-5678',
@@ -95,7 +95,7 @@ class HospitalSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $patientUser = User::create([
+        $patientUser = User::forceCreate([
             'name' => 'Caren G. Simpson',
             'email' => 'patient@medicare.test',
             'phone' => '+1 555-000-1000',

@@ -7,13 +7,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
-// Clear any stale config cache that may contain old local values (e.g. 127.0.0.1)
-// so Railway environment variables are always read fresh on boot.
-$configCachePath = dirname(__DIR__).'/bootstrap/cache/config.php';
-if (file_exists($configCachePath)) {
-    @unlink($configCachePath);
-}
-
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
