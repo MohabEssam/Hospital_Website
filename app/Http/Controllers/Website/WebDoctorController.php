@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Http\Controllers\Concerns\SendsAppointmentNotifications;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookDoctorAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
-use App\Notifications\AppointmentBookedNotification;
 use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -16,10 +16,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 
 class WebDoctorController extends Controller
 {
+    use SendsAppointmentNotifications;
+
     public function index(Request $request): View
     {
         $doctors = Doctor::query()
@@ -90,16 +91,7 @@ class WebDoctorController extends Controller
             ]);
         });
 
-        $appointment->load(['doctor', 'patient.user']);
-
-        if ($appointment->patient?->user) {
-            $appointment->patient->user->notify(new AppointmentBookedNotification($appointment));
-        }
-
-        if ($doctor->email) {
-            Notification::route('mail', $doctor->email)
-                ->notify(new AppointmentBookedNotification($appointment));
-        }
+        $this->notifyAppointmentBooked($appointment, $doctor);
 
         if ($request->expectsJson()) {
             return response()->json([

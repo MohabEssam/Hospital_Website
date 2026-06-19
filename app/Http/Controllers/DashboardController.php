@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesVisibleRecords;
 use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
@@ -17,6 +18,8 @@ use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
+    use ScopesVisibleRecords;
+
     public function index(): View
     {
         $user = auth()->user();
@@ -241,26 +244,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function visibleAppointmentsQuery(User $user): Builder
-    {
-        $query = Appointment::query();
-
-        if ($user->isAdmin()) {
-            return $query;
-        }
-
-        if ($user->isDoctor() && $user->doctorProfile) {
-            return $query->where('doctor_id', $user->doctorProfile->getKey());
-        }
-
-        if ($user->isPatient() && $user->patientProfile) {
-            return $query->where('patient_id', $user->patientProfile->getKey());
-        }
-
-        return $query->whereRaw('1 = 0');
-    }
-
-    private function visiblePatientsQuery(User $user): Builder
+    protected function visiblePatientsQuery(User $user): Builder
     {
         $query = Patient::query();
 

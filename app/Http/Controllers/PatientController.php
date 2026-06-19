@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesPatientAccess;
+use App\Http\Controllers\Concerns\ScopesVisibleRecords;
 use App\Http\Requests\StorePatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Doctor;
 use App\Models\Patient;
-use App\Models\User;
 use App\Services\QrCodeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +16,8 @@ use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
+    use AuthorizesPatientAccess, ScopesVisibleRecords;
+
     /**
      * Display a listing of the resource.
      */
@@ -126,7 +129,7 @@ class PatientController extends Controller
      */
     public function show(Patient $patient, QrCodeService $qrCode): View
     {
-        abort_unless($this->canView($patient, auth()->user()), 403);
+        abort_unless($this->canViewPatient($patient, auth()->user()), 403);
 
         $patient->load([
             Doctor::relationConstraint('doctor', ['name', 'department_id']),
@@ -153,7 +156,7 @@ class PatientController extends Controller
      */
     public function edit(Patient $patient): View
     {
-        abort_unless($this->canView($patient, auth()->user()), 403);
+        abort_unless($this->canViewPatient($patient, auth()->user()), 403);
 
         return view('patients.edit', [
             'patient' => $patient->load('doctor'),
@@ -166,7 +169,7 @@ class PatientController extends Controller
      */
     public function update(UpdatePatientRequest $request, Patient $patient): RedirectResponse
     {
-        abort_unless($this->canView($patient, auth()->user()), 403);
+        abort_unless($this->canViewPatient($patient, auth()->user()), 403);
         $patient->update($request->validated());
 
         return redirect()
@@ -179,46 +182,11 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient): RedirectResponse
     {
-        abort_unless($this->canView($patient, auth()->user()), 403);
+        abort_unless($this->canViewPatient($patient, auth()->user()), 403);
         $patient->delete();
 
         return redirect()
             ->route('patients.index')
             ->with('status', 'Patient deleted successfully.');
-    }
-
-    private function visiblePatientsQuery(User $user): Builder
-    {
-        $query = Patient::query();
-
-        if ($user->isAdmin()) {
-            return $query;
-        }
-
-        if ($user->isDoctor() && $user->doctorProfile) {
-            return $query->where('doctor_id', $user->doctorProfile->getKey());
-        }
-
-        if ($user->isPatient()) {
-            return $query->where('user_id', $user->getKey());
-        }
-
-        return $query->whereRaw('1 = 0');
-    }
-
-    private function canView(Patient $patient, User $user): bool
-    {
-        return $user->isAdmin()
-            || $user->isReception()
-            || (
-                $user->isDoctor()
-                && (
-                    $patient->doctor_id === $user->doctorProfile?->getKey()
-                    || $patient->appointments()
-                        ->where('doctor_id', $user->doctorProfile?->getKey())
-                        ->exists()
-                )
-            )
-            || ($user->isPatient() && $patient->user_id === $user->getKey());
     }
 }

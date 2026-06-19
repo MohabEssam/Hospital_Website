@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesVisibleRecords;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Mail\AppointmentApprovedMail;
@@ -21,6 +22,8 @@ use Throwable;
 
 class AppointmentController extends Controller
 {
+    use ScopesVisibleRecords;
+
     /**
      * Display a listing of the resource.
      */
@@ -257,25 +260,6 @@ class AppointmentController extends Controller
                 'error' => $exception->getMessage(),
             ]);
         }
-    }
-
-    private function visibleAppointmentsQuery(User $user): Builder
-    {
-        $query = Appointment::query();
-
-        if ($user->isAdmin()) {
-            return $query;
-        }
-
-        if ($user->isDoctor() && $user->doctorProfile) {
-            return $query->where('doctor_id', $user->doctorProfile->getKey());
-        }
-
-        if ($user->isPatient() && $user->patientProfile) {
-            return $query->where('patient_id', $user->patientProfile->getKey());
-        }
-
-        return $query->whereRaw('1 = 0');
     }
 
     private function applyFilters(Builder $query, Request $request, bool $includeStatus = true): Builder
