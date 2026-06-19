@@ -15,8 +15,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Validator;
+use Throwable;
 
 class BookingController extends Controller
 {
@@ -185,13 +187,20 @@ class BookingController extends Controller
 
         $appointment->load(['doctor', 'patient.user']);
 
-        if ($appointment->patient?->user) {
-            $appointment->patient->user->notify(new AppointmentBookedNotification($appointment));
-        }
+        try {
+            if ($appointment->patient?->user) {
+                $appointment->patient->user->notify(new AppointmentBookedNotification($appointment));
+            }
 
-        if ($doctor->email) {
-            Notification::route('mail', $doctor->email)
-                ->notify(new AppointmentBookedNotification($appointment));
+            if ($doctor->email) {
+                Notification::route('mail', $doctor->email)
+                    ->notify(new AppointmentBookedNotification($appointment));
+            }
+        } catch (Throwable $e) {
+            Log::error('Failed to send appointment booked notification.', [
+                'appointment_id' => $appointment->getKey(),
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return redirect()->route('website.booking.status', $appointment)
