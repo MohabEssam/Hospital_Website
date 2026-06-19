@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ServesResultFiles;
 use App\Models\Doctor;
 use App\Models\LabRequest;
 use App\Models\LabResult;
@@ -12,11 +13,12 @@ use App\Services\QrCodeService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientPortalController extends Controller
 {
+    use ServesResultFiles;
+
     public function dashboard(Request $request, QrCodeService $qrCode): View
     {
         $patient = $this->patientFor($request);
@@ -82,24 +84,14 @@ class PatientPortalController extends Controller
     {
         Gate::authorize('view', $labResult);
 
-        $path = $labResult->file_paths[$file] ?? null;
-        abort_unless(is_string($path) && Storage::disk('public')->exists($path), 404);
-
-        return $request->boolean('download')
-            ? Storage::disk('public')->download($path)
-            : Storage::disk('public')->response($path);
+        return $this->serveResultFile($request, $labResult->file_paths, $file);
     }
 
     public function scanResultFile(Request $request, ScanResult $scanResult, int $file): StreamedResponse
     {
         Gate::authorize('view', $scanResult);
 
-        $path = $scanResult->image_paths[$file] ?? null;
-        abort_unless(is_string($path) && Storage::disk('public')->exists($path), 404);
-
-        return $request->boolean('download')
-            ? Storage::disk('public')->download($path)
-            : Storage::disk('public')->response($path);
+        return $this->serveResultFile($request, $scanResult->image_paths, $file);
     }
 
     private function patientFor(Request $request): Patient

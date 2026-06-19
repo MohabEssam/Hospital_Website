@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesPatientAccess;
 use App\Models\Patient;
 use App\Models\User;
 use App\Services\PatientMedicalCardPdf;
@@ -12,6 +13,8 @@ use Illuminate\Http\Response;
 
 class PatientMedicalCardController extends Controller
 {
+    use AuthorizesPatientAccess;
+
     public function show(Request $request, QrCodeService $qrCode): View
     {
         $patient = $this->patientForUser($request->user());
@@ -73,17 +76,6 @@ class PatientMedicalCardController extends Controller
 
     private function authorizeStaffAccess(User $user, Patient $patient): void
     {
-        abort_unless(
-            $user->isAdmin()
-            || $user->isReception()
-            || (
-                $user->isDoctor()
-                && (
-                    $patient->doctor_id === $user->doctorProfile?->getKey()
-                    || $patient->appointments()->where('doctor_id', $user->doctorProfile?->getKey())->exists()
-                )
-            ),
-            403,
-        );
+        abort_unless($this->canViewPatient($patient, $user), 403);
     }
 }

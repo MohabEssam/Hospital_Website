@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesPatientAccess;
 use App\Http\Requests\StoreClinicalRecordRequest;
 use App\Models\Diagnosis;
 use App\Models\Doctor;
@@ -9,13 +10,14 @@ use App\Models\LabRequest;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\ScanRequest;
-use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class ClinicalRecordController extends Controller
 {
+    use AuthorizesPatientAccess;
+
     public function create(Patient $patient): View
     {
         abort_unless($this->canManagePatient($patient, auth()->user()), 403);
@@ -121,27 +123,5 @@ class ClinicalRecordController extends Controller
             ->filter(fn (array $row) => filled($row[$requiredKey] ?? null))
             ->values()
             ->all();
-    }
-
-    private function canManagePatient(Patient $patient, ?User $user): bool
-    {
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        if ($user->isDoctor()) {
-            $doctorId = $user->doctorProfile()->value('id');
-
-            return $patient->doctor_id === $doctorId
-                || $patient->appointments()
-                    ->where('doctor_id', $doctorId)
-                    ->exists();
-        }
-
-        return false;
     }
 }
