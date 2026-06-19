@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Appointment extends Model
 {
-    /** @use HasFactory<\Database\Factories\AppointmentFactory> */
+    /** @use HasFactory<AppointmentFactory> */
     use HasFactory;
 
     public const STATUS_CONFIRMED = 'confirmed';
-    public const STATUS_PENDING = 'pending';
+
     public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_COMPLETED = 'completed';
 
     protected $fillable = [
@@ -30,6 +31,7 @@ class Appointment extends Model
         'fee',
         'phone_number',
         'confirmation_email_sent_at',
+        'auto_confirmed_at',
     ];
 
     protected function casts(): array
@@ -38,6 +40,7 @@ class Appointment extends Model
             'appointment_date' => 'date',
             'fee' => 'decimal:2',
             'confirmation_email_sent_at' => 'datetime',
+            'auto_confirmed_at' => 'datetime',
         ];
     }
 
@@ -47,9 +50,7 @@ class Appointment extends Model
     public static function statusOptions(): array
     {
         return [
-            self::STATUS_PENDING,
             self::STATUS_CONFIRMED,
-            self::STATUS_REJECTED,
             self::STATUS_CANCELLED,
             self::STATUS_COMPLETED,
         ];
@@ -61,7 +62,6 @@ class Appointment extends Model
     public static function slotBlockingStatuses(): array
     {
         return [
-            self::STATUS_PENDING,
             self::STATUS_CONFIRMED,
         ];
     }

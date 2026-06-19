@@ -33,7 +33,7 @@ class AppointmentFactory extends Factory
             'appointment_date' => fake()->dateTimeBetween('-3 months', '+3 months'),
             'start_time' => $startTime->format('H:i'),
             'end_time' => $startTime->copy()->addMinutes(30)->format('H:i'),
-            'status' => fake()->randomElement(Appointment::statusOptions()),
+            'status' => Appointment::STATUS_CONFIRMED,
             'treatment' => fake()->randomElement(['Routine Check-Up', 'Cardiac Consultation', 'Pediatric Check-Up', 'Skin Allergy', 'Follow-Up Visit']),
             'notes' => fake()->optional()->sentence(),
             'fee' => max(0, (float) $doctor->consultation_fee + fake()->numberBetween(-25, 25)),

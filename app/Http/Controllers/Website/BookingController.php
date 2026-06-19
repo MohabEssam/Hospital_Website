@@ -176,7 +176,7 @@ class BookingController extends Controller
             'appointment_date' => $validated['appointment_date'],
             'start_time' => $startTime->format('H:i'),
             'end_time' => $endTime,
-            'status' => Appointment::STATUS_PENDING,
+            'status' => Appointment::STATUS_CONFIRMED,
             'treatment' => $validated['treatment'],
             'notes' => $validated['notes'] ?? '',
             'phone_number' => $validated['phone_number'],
@@ -265,10 +265,10 @@ class BookingController extends Controller
             'You are not authorized to cancel this appointment.'
         );
 
-        // Only pending appointments can be cancelled
-        if ($appointment->status !== Appointment::STATUS_PENDING) {
+        // Only confirmed appointments can be cancelled
+        if ($appointment->status !== Appointment::STATUS_CONFIRMED) {
             return redirect()->route('my-bookings')
-                ->with('error', 'Only pending appointments can be cancelled.');
+                ->with('error', 'Only confirmed appointments can be cancelled.');
         }
 
         $appointment->update(['status' => Appointment::STATUS_CANCELLED]);

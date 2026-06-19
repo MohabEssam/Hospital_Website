@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Services\AppointmentConflictService;
 use App\Services\DoctorScheduleService;

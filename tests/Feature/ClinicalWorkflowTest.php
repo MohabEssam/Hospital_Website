@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+
 class ClinicalWorkflowTest extends TestCase
 {
     use LazilyRefreshDatabase;

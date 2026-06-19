@@ -11,7 +11,9 @@ class ServiceBooking extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CONFIRMED = 'confirmed';
+
     public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [

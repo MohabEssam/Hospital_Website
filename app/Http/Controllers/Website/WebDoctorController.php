@@ -82,7 +82,7 @@ class WebDoctorController extends Controller
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $startTime->format('H:i'),
                 'end_time' => $startTime->copy()->addMinutes(30)->format('H:i'),
-                'status' => Appointment::STATUS_PENDING,
+                'status' => Appointment::STATUS_CONFIRMED,
                 'treatment' => $validated['treatment'],
                 'notes' => $validated['notes'] ?? '',
                 'phone_number' => $validated['phone_number'] ?? '',
