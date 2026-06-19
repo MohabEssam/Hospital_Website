@@ -24,9 +24,7 @@ class AppointmentApprovedMail extends Mailable implements ShouldQueue
      */
     public int $backoff = 30;
 
-    public function __construct(public Appointment $appointment)
-    {
-    }
+    public function __construct(public Appointment $appointment) {}
 
     public function envelope(): Envelope
     {
@@ -35,12 +33,14 @@ class AppointmentApprovedMail extends Mailable implements ShouldQueue
             : 'PENDING';
 
         return new Envelope(
-            subject: 'Your Medicare appointment has been confirmed (#' . $code . ')',
+            subject: 'Your Medicare appointment has been confirmed (#'.$code.')',
         );
     }
 
     public function content(): Content
     {
+        $this->appointment->loadMissing(['patient', 'doctor']);
+
         return new Content(
             view: 'emails.appointments.approved',
             with: [

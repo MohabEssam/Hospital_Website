@@ -100,8 +100,14 @@ class DoctorController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $request->file('avatar')
+            $path = $request->file('avatar')
                 ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
+
+            if ($path === false) {
+                return back()->withInput()->withErrors(['avatar' => 'Failed to upload avatar image. Please try again.']);
+            }
+
+            $data['avatar'] = $path;
         }
 
         $password = 'Dr@'.strtoupper(Str::random(3)).rand(100, 999);
@@ -283,12 +289,18 @@ class DoctorController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')
+                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
+
+            if ($path === false) {
+                return back()->withInput()->withErrors(['avatar' => 'Failed to upload avatar image. Please try again.']);
+            }
+
             if ($doctor->avatar && Storage::disk('public')->exists($doctor->avatar)) {
                 Storage::disk('public')->delete($doctor->avatar);
             }
 
-            $data['avatar'] = $request->file('avatar')
-                ->storeAs('doctors', time().'_'.$request->file('avatar')->getClientOriginalName(), 'public');
+            $data['avatar'] = $path;
         }
 
         DB::transaction(function () use ($doctor, $data): void {

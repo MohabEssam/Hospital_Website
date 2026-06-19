@@ -128,11 +128,17 @@ class DepartmentController extends Controller
 
         foreach ($imageFields as $field) {
             if ($request->hasFile($field)) {
+                $path = $request->file($field)->store('departments', 'public');
+
+                if ($path === false) {
+                    throw new \RuntimeException("Failed to upload {$field} image.");
+                }
+
                 if ($department && $department->{$field}) {
                     Storage::disk('public')->delete($department->{$field});
                 }
 
-                $data[$field] = $request->file($field)->store('departments', 'public');
+                $data[$field] = $path;
             } else {
                 unset($data[$field]);
             }

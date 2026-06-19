@@ -29,9 +29,9 @@ class AppointmentBookedNotification extends Notification
             ->subject('Medicare appointment request received')
             ->greeting('Appointment request received')
             ->line('Your appointment request has been saved and is pending confirmation.')
-            ->line('Doctor: '.$appointment->doctor->name)
-            ->line('Patient: '.$appointment->patient->name)
-            ->line('Date: '.$appointment->appointment_date->format('M d, Y'))
+            ->line('Doctor: '.($appointment->doctor?->name ?? 'Unassigned'))
+            ->line('Patient: '.($appointment->patient?->name ?? 'Unknown'))
+            ->line('Date: '.$appointment->appointment_date?->format('M d, Y'))
             ->line('Time: '.substr((string) $appointment->start_time, 0, 5))
             ->action('View bookings', route('my-bookings'))
             ->line('Thank you for choosing Medicare.');

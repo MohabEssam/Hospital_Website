@@ -46,6 +46,8 @@ class PatientCareController extends Controller
     {
         $patient = $request->user()->patientProfile;
 
+        abort_unless($patient, 403, 'A patient profile is required to book a service.');
+
         ServiceBooking::create([
             'patient_id' => $patient->getKey(),
             'patient_care_service_id' => $service->getKey(),

@@ -42,10 +42,17 @@ class ScanCenterController extends Controller
 
     public function storeResult(StoreScanResultRequest $request, ScanRequest $scanRequest): RedirectResponse
     {
-        $paths = collect($request->file('images', []))
-            ->map(fn ($file) => $file->store("scan-results/{$scanRequest->getKey()}", 'public'))
-            ->values()
-            ->all();
+        $paths = [];
+
+        foreach ($request->file('images', []) as $file) {
+            $path = $file->store("scan-results/{$scanRequest->getKey()}", 'public');
+
+            if ($path === false) {
+                return back()->withInput()->withErrors(['images' => 'Failed to upload one or more images. Please try again.']);
+            }
+
+            $paths[] = $path;
+        }
 
         DB::transaction(function () use ($request, $scanRequest, $paths): void {
             $result = ScanResult::updateOrCreate(

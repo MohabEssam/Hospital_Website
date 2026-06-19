@@ -42,10 +42,17 @@ class LabCenterController extends Controller
 
     public function storeResult(StoreLabResultRequest $request, LabRequest $labRequest): RedirectResponse
     {
-        $paths = collect($request->file('files', []))
-            ->map(fn ($file) => $file->store("lab-results/{$labRequest->getKey()}", 'public'))
-            ->values()
-            ->all();
+        $paths = [];
+
+        foreach ($request->file('files', []) as $file) {
+            $path = $file->store("lab-results/{$labRequest->getKey()}", 'public');
+
+            if ($path === false) {
+                return back()->withInput()->withErrors(['files' => 'Failed to upload one or more files. Please try again.']);
+            }
+
+            $paths[] = $path;
+        }
 
         DB::transaction(function () use ($request, $labRequest, $paths): void {
             $result = LabResult::updateOrCreate(

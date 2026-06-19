@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -19,25 +20,29 @@ class RegisteredUserController extends Controller
 
     public function store(RegisterRequest $request): RedirectResponse
     {
-        $user = User::create([
-            'name' => $request->validated('name'),
-            'email' => $request->validated('email'),
-            'phone' => $request->validated('phone'),
-            'gender' => $request->validated('gender'),
-            'password' => $request->validated('password'),
-            'role' => User::ROLE_PATIENT,
-        ]);
+        $user = DB::transaction(function () use ($request): User {
+            $user = User::create([
+                'name' => $request->validated('name'),
+                'email' => $request->validated('email'),
+                'phone' => $request->validated('phone'),
+                'gender' => $request->validated('gender'),
+                'password' => $request->validated('password'),
+                'role' => User::ROLE_PATIENT,
+            ]);
 
-        Patient::create([
-            'user_id' => $user->getKey(),
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $request->validated('phone'),
-            'gender' => ucfirst($request->validated('gender')),
-            'age' => $request->validated('age'),
-            'status' => Patient::STATUS_NEW,
-            'check_in_date' => today(),
-        ]);
+            Patient::create([
+                'user_id' => $user->getKey(),
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $request->validated('phone'),
+                'gender' => ucfirst($request->validated('gender')),
+                'age' => $request->validated('age'),
+                'status' => Patient::STATUS_NEW,
+                'check_in_date' => today(),
+            ]);
+
+            return $user;
+        });
 
         Auth::login($user);
         $request->session()->regenerate();
