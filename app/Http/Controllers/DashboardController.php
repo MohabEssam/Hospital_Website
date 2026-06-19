@@ -40,9 +40,6 @@ class DashboardController extends Controller
             'appointments_today' => (clone $appointmentsQuery)
                 ->whereDate('appointment_date', today())
                 ->count(),
-            'pending_appointments' => (clone $appointmentsQuery)
-                ->where('status', Appointment::STATUS_PENDING)
-                ->count(),
             'pending_service_bookings' => $user->isAdmin()
                 ? ServiceBooking::query()->where('status', ServiceBooking::STATUS_PENDING)->count()
                 : 0,
@@ -60,14 +57,6 @@ class DashboardController extends Controller
                 ->sum('fee'))
             ->all();
 
-        // "Pending revenue" = fee of bookings not yet confirmed (real, not fabricated)
-        $pendingSeries = $chartLabels
-            ->map(fn ($date) => (float) (clone $appointmentsQuery)
-                ->where('status', Appointment::STATUS_PENDING)
-                ->whereDate('appointment_date', $date)
-                ->sum('fee'))
-            ->all();
-
         $monthlyRevenuePeriods = collect(range(0, 3))
             ->map(fn (int $offset) => today()->copy()->startOfWeek()->subWeeks(3 - $offset));
 
@@ -75,18 +64,6 @@ class DashboardController extends Controller
             ->map(function ($startOfWeek) use ($appointmentsQuery, $nonCancelled): float {
                 return (float) (clone $appointmentsQuery)
                     ->tap($nonCancelled)
-                    ->whereBetween('appointment_date', [
-                        $startOfWeek->copy()->toDateString(),
-                        $startOfWeek->copy()->endOfWeek()->toDateString(),
-                    ])
-                    ->sum('fee');
-            })
-            ->all();
-
-        $monthlyPendingSeries = $monthlyRevenuePeriods
-            ->map(function ($startOfWeek) use ($appointmentsQuery): float {
-                return (float) (clone $appointmentsQuery)
-                    ->where('status', Appointment::STATUS_PENDING)
                     ->whereBetween('appointment_date', [
                         $startOfWeek->copy()->toDateString(),
                         $startOfWeek->copy()->endOfWeek()->toDateString(),
@@ -110,18 +87,6 @@ class DashboardController extends Controller
             })
             ->all();
 
-        $yearlyPendingSeries = $yearlyRevenuePeriods
-            ->map(function ($month) use ($appointmentsQuery): float {
-                return (float) (clone $appointmentsQuery)
-                    ->where('status', Appointment::STATUS_PENDING)
-                    ->whereBetween('appointment_date', [
-                        $month->copy()->toDateString(),
-                        $month->copy()->endOfMonth()->toDateString(),
-                    ])
-                    ->sum('fee');
-            })
-            ->all();
-
         // --- Appointments per day (last 7 days) ---
         $appointmentsPerDaySeries = $chartLabels
             ->map(fn ($date) => (int) (clone $appointmentsQuery)
@@ -132,7 +97,6 @@ class DashboardController extends Controller
         // --- Status distribution (real) ---
         $statusDistribution = [
             'confirmed' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_CONFIRMED)->count(),
-            'pending' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_PENDING)->count(),
             'cancelled' => (clone $appointmentsQuery)->where('status', Appointment::STATUS_CANCELLED)->count(),
         ];
 
@@ -212,24 +176,20 @@ class DashboardController extends Controller
             'patientAgeGroups' => $ageGroups,
             'revenueLabels' => $chartLabels->map->format('D')->all(),
             'incomeSeries' => $incomeSeries,
-            'pendingSeries' => $pendingSeries,
             'appointmentsPerDaySeries' => $appointmentsPerDaySeries,
             'statusDistribution' => $statusDistribution,
             'revenueDatasets' => [
                 'week' => [
                     'labels' => $chartLabels->map->format('D')->all(),
                     'income' => $incomeSeries,
-                    'pending' => $pendingSeries,
                 ],
                 'month' => [
                     'labels' => $monthlyRevenuePeriods->map(fn ($period) => $period->format('\W\e\e\k W'))->all(),
                     'income' => $monthlyIncomeSeries,
-                    'pending' => $monthlyPendingSeries,
                 ],
                 'year' => [
                     'labels' => $yearlyRevenuePeriods->map->format('M')->all(),
                     'income' => $yearlyIncomeSeries,
-                    'pending' => $yearlyPendingSeries,
                 ],
             ],
             'departmentDistribution' => $departmentDistribution,

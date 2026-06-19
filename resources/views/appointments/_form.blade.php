@@ -46,7 +46,7 @@
     <label class="form-label small fw-semibold">Status</label>
     <select name="status" class="form-select">
       @foreach (\App\Models\Appointment::statusOptions() as $status)
-        <option value="{{ $status }}" @selected(old('status', $appointment->status ?: \App\Models\Appointment::STATUS_PENDING) === $status)>{{ ucfirst($status) }}</option>
+        <option value="{{ $status }}" @selected(old('status', $appointment->status ?: \App\Models\Appointment::STATUS_CONFIRMED) === $status)>{{ ucfirst($status) }}</option>
       @endforeach
     </select>
   </div>

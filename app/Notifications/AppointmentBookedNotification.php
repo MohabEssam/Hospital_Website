@@ -26,9 +26,9 @@ class AppointmentBookedNotification extends Notification
         $appointment = $this->appointment->loadMissing(['doctor', 'patient']);
 
         return (new MailMessage)
-            ->subject('Medicare appointment request received')
-            ->greeting('Appointment request received')
-            ->line('Your appointment request has been saved and is pending confirmation.')
+            ->subject('Medicare appointment confirmed')
+            ->greeting('Appointment confirmed')
+            ->line('Your appointment has been confirmed.')
             ->line('Doctor: '.$appointment->doctor->name)
             ->line('Patient: '.$appointment->patient->name)
             ->line('Date: '.$appointment->appointment_date->format('M d, Y'))

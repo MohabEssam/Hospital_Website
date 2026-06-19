@@ -66,19 +66,6 @@
         <div class="card-body">
           <h6 class="fw-semibold mb-3">Quick Actions</h6>
           <div class="d-grid gap-2">
-            @if($appointment->status === 'pending')
-              <form action="{{ route('appointments.status', $appointment) }}" method="POST">
-                @csrf @method('PATCH')
-                <input type="hidden" name="status" value="confirmed">
-                <button type="submit" class="btn btn-success w-100 mb-1"><i class="fas fa-check me-1"></i> Confirm Appointment</button>
-              </form>
-              <form action="{{ route('appointments.status', $appointment) }}" method="POST">
-                @csrf @method('PATCH')
-                <input type="hidden" name="status" value="cancelled">
-                <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Reject this appointment?')"><i class="fas fa-times me-1"></i> Reject Appointment</button>
-              </form>
-              <hr class="my-1">
-            @endif
             <a href="{{ route('appointments.edit', $appointment) }}" class="btn btn-dark">Edit Appointment</a>
             @if ($appointment->doctor)
               <a href="{{ route('doctors.show', $appointment->doctor) }}" class="btn btn-outline-secondary">View Doctor</a>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Department extends Model
 {
-    /** @use HasFactory<\Database\Factories\DepartmentFactory> */
+    /** @use HasFactory<DepartmentFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -69,7 +70,7 @@ class Department extends Model
      */
     public function getIconUrlAttribute(): ?string
     {
-        return $this->icon ? asset('storage/' . $this->icon) : null;
+        return $this->icon ? asset('storage/'.$this->icon) : null;
     }
 
     /**
@@ -77,7 +78,7 @@ class Department extends Model
      */
     public function getHeroImageUrlAttribute(): ?string
     {
-        return $this->hero_image ? asset('storage/' . $this->hero_image) : null;
+        return $this->hero_image ? asset('storage/'.$this->hero_image) : null;
     }
 
     /**
@@ -85,7 +86,7 @@ class Department extends Model
      */
     public function getSidebarImageUrlAttribute(): ?string
     {
-        return $this->sidebar_image ? asset('storage/' . $this->sidebar_image) : null;
+        return $this->sidebar_image ? asset('storage/'.$this->sidebar_image) : null;
     }
 
     protected static function buildUniqueSlug(string $name, ?int $ignoreId = null): string

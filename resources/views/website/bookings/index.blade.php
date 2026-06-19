@@ -70,11 +70,6 @@
            style="border-radius: 20px;">
           All
         </a>
-        <a href="{{ route('my-bookings', array_merge(request()->except('status'), ['status' => 'pending'])) }}"
-           class="btn {{ $statusFilter === 'pending' ? 'btn-warning' : 'btn-outline-secondary' }}"
-           style="border-radius: 20px;">
-          <i class="bi bi-clock me-1"></i> Pending
-        </a>
         <a href="{{ route('my-bookings', array_merge(request()->except('status'), ['status' => 'confirmed'])) }}"
            class="btn {{ $statusFilter === 'confirmed' ? 'btn-success' : 'btn-outline-secondary' }}"
            style="border-radius: 20px;">
@@ -108,7 +103,7 @@
                       <small class="text-muted">{{ $appointment->doctor?->specialty ?? $appointment->doctor?->department?->name ?? 'General' }}</small>
                     </div>
                   </div>
-                  <span class="badge {{ $appointment->status === 'confirmed' ? 'bg-success' : ($appointment->status === 'pending' ? 'bg-warning text-dark' : 'bg-danger') }}"
+                  <span class="badge {{ $appointment->status === 'confirmed' ? 'bg-success' : 'bg-danger' }}"
                         style="border-radius: 8px; font-size: 0.75rem; padding: 0.5em 0.8em;">
                     {{ ucfirst($appointment->status) }}
                   </span>
@@ -163,7 +158,7 @@
                      style="border-radius: 8px;">
                     <i class="bi bi-eye me-1"></i> View Details
                   </a>
-                  @if($appointment->status === 'pending')
+                  @if($appointment->status === 'confirmed')
                     <form action="{{ route('website.booking.cancel', $appointment) }}" method="POST" class="flex-fill">
                       @csrf
                       <button type="submit"

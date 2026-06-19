@@ -200,7 +200,6 @@
               </div>
               <div class="d-flex gap-3 mb-2">
                 <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#1a2e4a;"></span> Confirmed</span>
-                <span class="d-flex align-items-center gap-1" style="font-size:.7rem;"><span class="rounded-circle d-inline-block flex-shrink-0" style="width:10px;height:10px;background:#3eb8b0;"></span> Pending</span>
               </div>
               <div id="revenueChart"></div>
             </div>
@@ -284,22 +283,6 @@
       </div>
       @endif
 
-      @php
-        $pendingCount = collect($recentAppointments)->where('status', 'pending')->count();
-      @endphp
-      @if($pendingCount > 0)
-      <div class="alert border-0 shadow-sm d-flex align-items-center gap-3 mb-3" style="background:#fff8e1;border-radius:12px;">
-        <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;background:#ffc107;">
-          <i class="fas fa-clock text-white"></i>
-        </span>
-        <div class="flex-grow-1">
-          <p class="fw-semibold mb-0" style="font-size:.85rem;">{{ $pendingCount }} Pending Appointment{{ $pendingCount > 1 ? 's' : '' }} Awaiting Action</p>
-          <p class="text-muted mb-0" style="font-size:.72rem;">Review and confirm or reject pending bookings from patients.</p>
-        </div>
-        <a href="{{ route('appointments.index', ['status' => 'pending']) }}" class="btn btn-dark btn-sm">Review Now</a>
-      </div>
-      @endif
-
       <div class="card border-0 shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -341,8 +324,8 @@
                   @php
                     $statusClasses = [
                         'confirmed' => 'bg-success bg-opacity-25 text-success',
-                        'pending' => 'bg-warning bg-opacity-25 text-warning',
                         'cancelled' => 'bg-danger bg-opacity-25 text-danger',
+                        'completed' => 'bg-success bg-opacity-25 text-success',
                     ];
                   @endphp
                   <tr>
@@ -360,23 +343,7 @@
                           @if(auth()->user()->isAdmin())
                           <li><a class="dropdown-item" href="{{ route('appointments.edit', $appointment) }}">Reschedule</a></li>
                           @endif
-                          @if($appointment->status === 'pending')
-                          <li><hr class="dropdown-divider"></li>
-                          <li>
-                            <form action="{{ route('appointments.status', $appointment) }}" method="POST">
-                              @csrf @method('PATCH')
-                              <input type="hidden" name="status" value="confirmed">
-                              <button type="submit" class="dropdown-item text-success"><i class="fas fa-check me-2"></i>Confirm</button>
-                            </form>
-                          </li>
-                          <li>
-                            <form action="{{ route('appointments.status', $appointment) }}" method="POST">
-                              @csrf @method('PATCH')
-                              <input type="hidden" name="status" value="cancelled">
-                              <button type="submit" class="dropdown-item text-danger"><i class="fas fa-times me-2"></i>Reject</button>
-                            </form>
-                          </li>
-                          @endif
+
                         </ul>
                       </div>
                     </td>
@@ -482,7 +449,6 @@
       chart: { type: 'line', height: 240, toolbar: { show: false } },
       series: [
         { name: 'Confirmed', data: revenueDatasets.week.income },
-        { name: 'Pending', data: revenueDatasets.week.pending },
       ],
       xaxis: { categories: revenueDatasets.week.labels },
       colors: ['#1a2e4a', '#3eb8b0'],
@@ -528,7 +494,6 @@
 
       revenueChart.updateSeries([
         { name: 'Confirmed', data: dataset.income },
-        { name: 'Pending', data: dataset.pending }
       ]);
     };
 
@@ -553,8 +518,8 @@
       new ApexCharts(statusEl, {
         chart: { type: 'donut', height: 200, toolbar: { show: false } },
         series: @json(array_values($statusDistribution)),
-        labels: ['Confirmed', 'Pending', 'Cancelled'],
-        colors: ['#0a8c6a', '#f0b429', '#c0392b'],
+        labels: ['Confirmed', 'Cancelled'],
+        colors: ['#0a8c6a', '#c0392b'],
         legend: { position: 'bottom', fontSize: '11px' },
         dataLabels: { enabled: false },
         stroke: { width: 0 }

@@ -2,8 +2,8 @@
   @php
     $statusClasses = [
         'confirmed' => 'background:#d1faf3;color:#0a8c6a;',
-        'pending' => 'background:#fff3cd;color:#856404;',
         'cancelled' => 'background:#fdecea;color:#c0392b;',
+        'completed' => 'background:#d1faf3;color:#0a8c6a;',
     ];
   @endphp
   <tr>
@@ -38,23 +38,6 @@
               <i class="fas fa-user-md me-2 text-muted"></i>View Doctor
             </a>
           </li>
-          @if($appointment->status === 'pending')
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <form action="{{ route('appointments.status', $appointment) }}" method="POST">
-              @csrf @method('PATCH')
-              <input type="hidden" name="status" value="confirmed">
-              <button type="submit" class="dropdown-item text-success"><i class="fas fa-check me-2"></i>Confirm</button>
-            </form>
-          </li>
-          <li>
-            <form action="{{ route('appointments.status', $appointment) }}" method="POST" onsubmit="return confirm('Reject this appointment?')">
-              @csrf @method('PATCH')
-              <input type="hidden" name="status" value="cancelled">
-              <button type="submit" class="dropdown-item text-danger"><i class="fas fa-times me-2"></i>Reject</button>
-            </form>
-          </li>
-          @endif
           @if(auth()->user()->isAdmin())
           <li><hr class="dropdown-divider"></li>
           <li>

@@ -56,7 +56,7 @@ class UpdateAppointmentRequest extends FormRequest
 
         $this->merge([
             'treatment' => trim((string) $this->input('treatment')),
-            'status' => $this->input('status', Appointment::STATUS_PENDING),
+            'status' => $this->input('status', Appointment::STATUS_CONFIRMED),
             'end_time' => $endTime,
             'fee' => $this->input('fee', 0),
         ]);

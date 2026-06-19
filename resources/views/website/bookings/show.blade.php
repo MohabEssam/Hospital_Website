@@ -8,14 +8,14 @@
   .bs-card{max-width:640px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.07);overflow:hidden}
   .bs-header{text-align:center;padding:36px 32px 20px;background:linear-gradient(135deg,#f8fafc,#f0f4f8)}
   .bs-check{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:bsPop .5s cubic-bezier(.34,1.56,.64,1)}
-  .bs-check.pending{background:#fef9c3}.bs-check.confirmed{background:#d1fae5}.bs-check.cancelled{background:#fee2e2}
+  .bs-check.confirmed{background:#d1fae5}.bs-check.cancelled{background:#fee2e2}
   .bs-check i{font-size:32px}
-  .bs-check.pending i{color:#ca8a04}.bs-check.confirmed i{color:#059669}.bs-check.cancelled i{color:#dc2626}
+  .bs-check.confirmed i{color:#059669}.bs-check.cancelled i{color:#dc2626}
   @keyframes bsPop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
   .bs-header h2{font-weight:700;font-size:22px;color:#1e293b;margin-bottom:4px}
   .bs-header p{color:#64748b;font-size:14px;margin:0}
   .bs-badge{display:inline-block;padding:5px 16px;border-radius:20px;font-weight:600;font-size:13px;margin-top:10px}
-  .bs-badge.pending{background:#fef9c3;color:#92400e}.bs-badge.confirmed{background:#d1fae5;color:#065f46}.bs-badge.cancelled{background:#fee2e2;color:#991b1b}
+  .bs-badge.confirmed{background:#d1fae5;color:#065f46}.bs-badge.cancelled{background:#fee2e2;color:#991b1b}
   .bs-body{padding:28px 32px}
   .bs-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
   .bs-item{padding:14px 0;border-bottom:1px solid #f1f5f9}
@@ -37,19 +37,17 @@
       <div class="bs-header">
         @php
           $statusClass = match($appointment->status) {
-            'confirmed' => 'confirmed',
             'cancelled' => 'cancelled',
-            default => 'pending',
+            default => 'confirmed',
           };
           $statusIcon = match($appointment->status) {
-            'confirmed' => 'bi-check-circle-fill',
             'cancelled' => 'bi-x-circle-fill',
-            default => 'bi-clock-fill',
+            default => 'bi-check-circle-fill',
           };
         @endphp
 
         <div class="bs-check {{ $statusClass }}"><i class="bi {{ $statusIcon }}"></i></div>
-        <h2>Appointment Booked!</h2>
+        <h2>Appointment Confirmed!</h2>
         <p>{{ session('status') }}</p>
         <span class="bs-badge {{ $statusClass }}">{{ ucfirst($appointment->status) }}</span>
       </div>
@@ -112,14 +110,12 @@
       <div class="bs-header">
         @php
           $statusClass = match($appointment->status) {
-            'confirmed' => 'confirmed',
             'cancelled' => 'cancelled',
-            default => 'pending',
+            default => 'confirmed',
           };
           $statusIcon = match($appointment->status) {
-            'confirmed' => 'bi-check-circle-fill',
             'cancelled' => 'bi-x-circle-fill',
-            default => 'bi-clock-fill',
+            default => 'bi-check-circle-fill',
           };
         @endphp
 

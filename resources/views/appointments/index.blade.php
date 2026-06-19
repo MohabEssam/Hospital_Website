@@ -20,9 +20,6 @@
         <a href="{{ route('appointments.index', array_merge(request()->query(), ['status' => 'confirmed'])) }}" class="nav-link {{ ($filters['status'] ?? '') === 'confirmed' ? 'active' : '' }}">
           Confirmed <span class="badge ms-1" style="background:#d1faf3;color:#0a8c6a;">{{ $statusCounts['confirmed'] }}</span>
         </a>
-        <a href="{{ route('appointments.index', array_merge(request()->query(), ['status' => 'pending'])) }}" class="nav-link {{ ($filters['status'] ?? '') === 'pending' ? 'active' : '' }}">
-          Pending <span class="badge ms-1" style="background:#fff3cd;color:#856404;">{{ $statusCounts['pending'] }}</span>
-        </a>
         <a href="{{ route('appointments.index', array_merge(request()->query(), ['status' => 'cancelled'])) }}" class="nav-link {{ ($filters['status'] ?? '') === 'cancelled' ? 'active' : '' }}">
           Cancelled <span class="badge ms-1" style="background:#fdecea;color:#c0392b;">{{ $statusCounts['cancelled'] }}</span>
         </a>
@@ -169,7 +166,7 @@
                 <label class="form-label small fw-semibold">Status</label>
                 <select class="form-select form-select-sm" name="status">
                   @foreach (\App\Models\Appointment::statusOptions() as $status)
-                    <option value="{{ $status }}" @selected(old('quick_form') === 'appointment' ? old('status', \App\Models\Appointment::STATUS_PENDING) === $status : \App\Models\Appointment::STATUS_PENDING === $status)>{{ ucfirst($status) }}</option>
+                    <option value="{{ $status }}" @selected(old('quick_form') === 'appointment' ? old('status', \App\Models\Appointment::STATUS_CONFIRMED) === $status : \App\Models\Appointment::STATUS_CONFIRMED === $status)>{{ ucfirst($status) }}</option>
                   @endforeach
                 </select>
               </div>

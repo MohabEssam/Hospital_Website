@@ -240,16 +240,16 @@ class HospitalSeeder extends Seeder
 
         $appointmentRows = [
             ['patient' => 'Caren G. Simpson', 'doctor' => 'Dr. Petra Winsburry', 'offset' => 0, 'start' => '09:00', 'treatment' => 'Routine Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
-            ['patient' => 'Edgar Warrow', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 0, 'start' => '10:00', 'treatment' => 'Cardiac Consultation', 'status' => Appointment::STATUS_PENDING],
+            ['patient' => 'Edgar Warrow', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 0, 'start' => '10:00', 'treatment' => 'Cardiac Consultation', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Ocean Jane Lupre', 'doctor' => 'Dr. Damian Sanchez', 'offset' => 0, 'start' => '11:00', 'treatment' => 'Pediatric Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Shane Riddick', 'doctor' => 'Dr. Chloe Harrington', 'offset' => 1, 'start' => '13:00', 'treatment' => 'Skin Allergy', 'status' => Appointment::STATUS_CANCELLED],
             ['patient' => 'Queen Lawnston', 'doctor' => 'Dr. Petra Winsburry', 'offset' => 1, 'start' => '14:00', 'treatment' => 'Follow-Up Visit', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Alice Mitchell', 'doctor' => 'Dr. Emily Smith', 'offset' => 2, 'start' => '09:30', 'treatment' => 'Routine Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
-            ['patient' => 'Mikhail Morozov', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 2, 'start' => '11:30', 'treatment' => 'Cardiac Consultation', 'status' => Appointment::STATUS_PENDING],
+            ['patient' => 'Mikhail Morozov', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 2, 'start' => '11:30', 'treatment' => 'Cardiac Consultation', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Mateus Fernandes', 'doctor' => 'Dr. Damian Sanchez', 'offset' => 3, 'start' => '10:00', 'treatment' => 'Pediatric Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Pari Desai', 'doctor' => 'Dr. Chloe Harrington', 'offset' => 3, 'start' => '12:30', 'treatment' => 'Skin Allergy', 'status' => Appointment::STATUS_CANCELLED],
             ['patient' => 'Omar Ali', 'doctor' => 'Dr. Andrew Peterson', 'offset' => 4, 'start' => '15:00', 'treatment' => 'Follow-Up Visit', 'status' => Appointment::STATUS_CONFIRMED],
-            ['patient' => 'Camila Alvarez', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 5, 'start' => '10:30', 'treatment' => 'Cardiac Check-Up', 'status' => Appointment::STATUS_PENDING],
+            ['patient' => 'Camila Alvarez', 'doctor' => 'Dr. Olivia Martinez', 'offset' => 5, 'start' => '10:30', 'treatment' => 'Cardiac Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
             ['patient' => 'Thabo van Rooyen', 'doctor' => 'Dr. Damian Sanchez', 'offset' => 6, 'start' => '09:00', 'treatment' => 'Pediatric Check-Up', 'status' => Appointment::STATUS_CONFIRMED],
         ];
 

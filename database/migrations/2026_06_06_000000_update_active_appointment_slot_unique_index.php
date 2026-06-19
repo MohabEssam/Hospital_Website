@@ -16,8 +16,8 @@ return new class extends Migration
 
         $this->dropIndexIfExists();
 
-        DB::statement("
-            CREATE UNIQUE INDEX ".self::INDEX_NAME."
+        DB::statement('
+            CREATE UNIQUE INDEX '.self::INDEX_NAME."
             ON appointments (
                 doctor_id,
                 appointment_date,
@@ -35,8 +35,8 @@ return new class extends Migration
 
         $this->dropIndexIfExists();
 
-        DB::statement("
-            CREATE UNIQUE INDEX ".self::INDEX_NAME."
+        DB::statement('
+            CREATE UNIQUE INDEX '.self::INDEX_NAME."
             ON appointments (
                 doctor_id,
                 appointment_date,

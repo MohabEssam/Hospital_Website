@@ -238,7 +238,7 @@
                 <h3>How do I book an appointment?</h3>
                 <div class="faq-content">
                   <p>Register or login as a patient, then go to the "Book Appointment" page. Select your preferred doctor,
-                     choose a date and time, and submit your booking. You'll receive a confirmation once it's approved.</p>
+                     choose a date and time, and submit your booking. Your appointment is confirmed immediately.</p>
                 </div>
                 <i class="faq-toggle bi bi-chevron-right"></i>
               </div>

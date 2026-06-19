@@ -83,11 +83,9 @@ class BookingSlotsTest extends TestCase
         $date = today()->addDay();
 
         foreach ([
-            '09:00' => Appointment::STATUS_PENDING,
-            '09:30' => Appointment::STATUS_CONFIRMED,
-            '10:00' => Appointment::STATUS_REJECTED,
-            '10:30' => Appointment::STATUS_CANCELLED,
-            '11:00' => Appointment::STATUS_COMPLETED,
+            '09:00' => Appointment::STATUS_CONFIRMED,
+            '09:30' => Appointment::STATUS_CANCELLED,
+            '10:00' => Appointment::STATUS_COMPLETED,
         ] as $startTime => $status) {
             Appointment::factory()->create([
                 'doctor_id' => $doctor->getKey(),
@@ -111,10 +109,8 @@ class BookingSlotsTest extends TestCase
         $slots = collect($day['slots'])->keyBy('value');
 
         $this->assertFalse($slots->get('09:00')['available']);
-        $this->assertFalse($slots->get('09:30')['available']);
+        $this->assertTrue($slots->get('09:30')['available']);
         $this->assertTrue($slots->get('10:00')['available']);
-        $this->assertTrue($slots->get('10:30')['available']);
-        $this->assertTrue($slots->get('11:00')['available']);
     }
 
     public function test_conflict_service_only_blocks_active_appointment_statuses(): void
@@ -124,7 +120,7 @@ class BookingSlotsTest extends TestCase
         $date = today()->addDay()->toDateString();
         $service = app(AppointmentConflictService::class);
 
-        foreach ([Appointment::STATUS_REJECTED, Appointment::STATUS_CANCELLED, Appointment::STATUS_COMPLETED] as $status) {
+        foreach ([Appointment::STATUS_CANCELLED, Appointment::STATUS_COMPLETED] as $status) {
             Appointment::factory()->create([
                 'doctor_id' => $doctor->getKey(),
                 'patient_id' => $patient->getKey(),
@@ -145,7 +141,7 @@ class BookingSlotsTest extends TestCase
             'appointment_date' => $date,
             'start_time' => '09:00',
             'end_time' => '09:30',
-            'status' => Appointment::STATUS_PENDING,
+            'status' => Appointment::STATUS_CONFIRMED,
         ]);
 
         $this->assertTrue($service->hasConflict($doctor->getKey(), $date, '09:00', '09:30'));

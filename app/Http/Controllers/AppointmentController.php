@@ -75,7 +75,6 @@ class AppointmentController extends Controller
             'statusCounts' => [
                 'all' => (clone $baseQuery)->count(),
                 'confirmed' => (clone $baseQuery)->where('status', Appointment::STATUS_CONFIRMED)->count(),
-                'pending' => (clone $baseQuery)->where('status', Appointment::STATUS_PENDING)->count(),
                 'cancelled' => (clone $baseQuery)->where('status', Appointment::STATUS_CANCELLED)->count(),
             ],
         ]);
@@ -317,7 +316,7 @@ class AppointmentController extends Controller
 
         if ($user->isPatient() && $user->patientProfile) {
             $data['patient_id'] = $user->patientProfile->getKey();
-            $data['status'] = Appointment::STATUS_PENDING;
+            $data['status'] = Appointment::STATUS_CONFIRMED;
         }
 
         if (empty($data['department_id'])) {

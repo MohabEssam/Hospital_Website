@@ -42,11 +42,13 @@ class BookServiceRequest extends FormRequest
 
                 if (! $service || ! $service->is_bookable) {
                     $validator->errors()->add('service', 'This service does not accept bookings.');
+
                     return;
                 }
 
                 if (! $patient) {
                     $validator->errors()->add('patient', 'Patient profile not found.');
+
                     return;
                 }
 
