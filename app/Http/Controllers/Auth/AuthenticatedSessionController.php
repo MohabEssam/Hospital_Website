@@ -49,7 +49,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if ($user->isPatient()) {
-            return redirect()->intended(route('patient.dashboard'));
+    return redirect('/');
         }
 
         return redirect()->intended(route('dashboard'));
