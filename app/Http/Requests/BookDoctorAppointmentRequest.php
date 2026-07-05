@@ -70,6 +70,20 @@ class BookDoctorAppointmentRequest extends FormRequest
 
                 $startTime = Carbon::createFromFormat('H:i', (string) $this->input('start_time'));
                 $endTime = $startTime->copy()->addMinutes(30)->format('H:i');
+                $patient = $this->user()?->patientProfile;
+
+                if (
+                    $patient
+                    && app(AppointmentConflictService::class)->findPatientDuplicate(
+                        $patient->getKey(),
+                        $doctor->getKey(),
+                        (string) $this->input('appointment_date'),
+                        $startTime->format('H:i'),
+                        $endTime,
+                    )
+                ) {
+                    return;
+                }
 
                 if (app(AppointmentConflictService::class)->hasConflict(
                     $doctor->getKey(),

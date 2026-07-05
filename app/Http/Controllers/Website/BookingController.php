@@ -147,21 +147,35 @@ class BookingController extends Controller
 
         $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
         $endTime = $startTime->copy()->addMinutes(30)->format('H:i');
+        $startTimeValue = $startTime->format('H:i');
+
+        $duplicate = $this->conflictService->findPatientDuplicate(
+            $patient->getKey(),
+            $doctor->getKey(),
+            $validated['appointment_date'],
+            $startTimeValue,
+            $endTime,
+        );
+
+        if ($duplicate) {
+            return redirect()->route('website.booking.status', $duplicate)
+                ->with('status', 'Appointment booked successfully!');
+        }
 
         $validator = validator($validated);
-        $validator->after(function (Validator $validator) use ($doctor, $validated, $startTime, $endTime): void {
+        $validator->after(function (Validator $validator) use ($doctor, $validated, $startTimeValue, $endTime): void {
             if (! $doctor->isAvailable()) {
                 $validator->errors()->add('doctor_id', 'The selected doctor is currently unavailable.');
             }
 
-            if (! $this->scheduleService->slotIsAvailable($doctor, $validated['appointment_date'], $startTime->format('H:i'))) {
+            if (! $this->scheduleService->slotIsAvailable($doctor, $validated['appointment_date'], $startTimeValue)) {
                 $validator->errors()->add('start_time', 'This time slot is not available in the doctor schedule.');
             }
 
             if ($this->conflictService->hasConflict(
                 $doctor->getKey(),
                 $validated['appointment_date'],
-                $startTime->format('H:i'),
+                $startTimeValue,
                 $endTime,
             )) {
                 $validator->errors()->add('start_time', 'This appointment slot has just been booked. Please choose another time.');
@@ -174,7 +188,7 @@ class BookingController extends Controller
             'doctor_id' => $doctor->getKey(),
             'department_id' => $doctor->department_id,
             'appointment_date' => $validated['appointment_date'],
-            'start_time' => $startTime->format('H:i'),
+            'start_time' => $startTimeValue,
             'end_time' => $endTime,
             'status' => Appointment::STATUS_CONFIRMED,
             'treatment' => $validated['treatment'],

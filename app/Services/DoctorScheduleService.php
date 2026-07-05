@@ -36,21 +36,18 @@ class DoctorScheduleService
                 $startDate->copy()->toDateString(),
                 $startDate->copy()->addDays($days - 1)->toDateString(),
             ])
-            ->get(['appointment_date', 'start_time'])
+            ->get(['appointment_date', 'start_time', 'end_time'])
             ->groupBy(fn (Appointment $appointment) => $appointment->appointment_date->toDateString());
 
         return collect(range(0, $days - 1))->map(function (int $offset) use ($doctor, $startDate, $appointments): array {
             $date = $startDate->copy()->addDays($offset);
-            $bookedTimes = $appointments
-                ->get($date->toDateString(), collect())
-                ->map(fn (Appointment $appointment) => $this->normalizeTime((string) $appointment->start_time))
-                ->all();
+            $appointmentsForDate = $appointments->get($date->toDateString(), collect());
 
             $slots = $doctor->schedules
                 ->where('day_of_week', $date->dayOfWeek)
                 ->where('is_available', true)
                 ->sortBy('start_time')
-                ->flatMap(fn (DoctorSchedule $schedule) => $this->generateSlotsFromSchedule($schedule, $bookedTimes, $date))
+                ->flatMap(fn (DoctorSchedule $schedule) => $this->generateSlotsFromSchedule($schedule, $appointmentsForDate, $date))
                 ->unique('time')
                 ->sortBy('time')
                 ->values();
@@ -65,7 +62,7 @@ class DoctorScheduleService
     /**
      * @return array<int, array{time: string, label: string, available: bool, reason: string|null}>
      */
-    public function generateSlotsFromSchedule(DoctorSchedule $schedule, array $bookedTimes, Carbon $date): array
+    public function generateSlotsFromSchedule(DoctorSchedule $schedule, Collection $appointments, Carbon $date): array
     {
         $slots = [];
         $cursor = Carbon::parse($schedule->start_time);
@@ -73,8 +70,9 @@ class DoctorScheduleService
 
         while ($cursor->copy()->addMinutes(self::SLOT_DURATION_MINUTES)->lte($windowEnd)) {
             $time = $cursor->format('H:i');
+            $endTime = $cursor->copy()->addMinutes(self::SLOT_DURATION_MINUTES)->format('H:i');
             $isPast = $date->isToday() && $time <= now()->format('H:i');
-            $isBooked = in_array($time, $bookedTimes, true);
+            $isBooked = $this->appointmentsOverlap($appointments, $time, $endTime);
 
             $slots[] = [
                 'time' => $time,
@@ -154,6 +152,14 @@ class DoctorScheduleService
                 ]);
             }
         }
+    }
+
+    private function appointmentsOverlap(Collection $appointments, string $startTime, string $endTime): bool
+    {
+        return $appointments->contains(function (Appointment $appointment) use ($startTime, $endTime): bool {
+            return $this->normalizeTime((string) $appointment->start_time) < $endTime
+                && $this->normalizeTime((string) $appointment->end_time) > $startTime;
+        });
     }
 
     private function normalizeTime(string $time): string

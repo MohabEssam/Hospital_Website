@@ -82,6 +82,19 @@ class StoreAppointmentRequest extends FormRequest
                 $blocksSlot = in_array((string) $this->input('status'), Appointment::slotBlockingStatuses(), true);
 
                 if (
+                    $blocksSlot
+                    && app(AppointmentConflictService::class)->findPatientDuplicate(
+                        $this->integer('patient_id'),
+                        $doctor->getKey(),
+                        (string) $this->input('appointment_date'),
+                        (string) $this->input('start_time'),
+                        (string) $this->input('end_time'),
+                    )
+                ) {
+                    return;
+                }
+
+                if (
                     ! $doctor->isAvailable()
                     && $blocksSlot
                 ) {

@@ -290,9 +290,12 @@ document.addEventListener('DOMContentLoaded', function(){
     treatInput=document.getElementById('treatment'),
     preview=document.getElementById('docPreview'),
     slotsContainer=document.getElementById('slotsContainer'),
-    modal=document.getElementById('reviewModal');
+    modal=document.getElementById('reviewModal'),
+    bookingForm=document.getElementById('bookingForm'),
+    submitButton=document.querySelector('.bk-btn-confirm');
 
   let st={doctor:'',dept:'',specialty:'',fee:'',avatar:'',initials:'',date:'',time:'',timeLabel:''};
+  let bookingSubmitted=false;
 
   // Department filter
   deptFilter.addEventListener('change',function(){
@@ -436,6 +439,18 @@ document.addEventListener('DOMContentLoaded', function(){
   modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
   function closeModal(){modal.classList.remove('open');document.body.style.overflow='';}
+
+  bookingForm.addEventListener('submit',function(e){
+    if(bookingSubmitted){e.preventDefault();return;}
+    if(!validate()){e.preventDefault();return;}
+
+    bookingSubmitted=true;
+    if(submitButton){
+      submitButton.dataset.originalText=submitButton.innerHTML;
+      submitButton.disabled=true;
+      submitButton.innerHTML='<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Booking...';
+    }
+  });
 
   // Init: fire doctor change if pre-selected
   if(docSelect.value)docSelect.dispatchEvent(new Event('change'));

@@ -39,6 +39,26 @@ class AppointmentConflictService
         return $conflicts->isNotEmpty();
     }
 
+    public function findPatientDuplicate(
+        int $patientId,
+        int $doctorId,
+        string $appointmentDate,
+        string $startTime,
+        string $endTime,
+    ): ?Appointment {
+        $startTime = $this->normalizeTime($startTime);
+        $endTime = $this->normalizeTime($endTime);
+
+        return Appointment::query()
+            ->where('patient_id', $patientId)
+            ->where('doctor_id', $doctorId)
+            ->whereDate('appointment_date', $appointmentDate)
+            ->whereTime('start_time', $startTime)
+            ->whereTime('end_time', $endTime)
+            ->whereIn('status', Appointment::slotBlockingStatuses())
+            ->first();
+    }
+
     public function query(
         int $doctorId,
         string $appointmentDate,
@@ -56,5 +76,10 @@ class AppointmentConflictService
                     ->where('start_time', '<', $endTime)
                     ->where('end_time', '>', $startTime);
             });
+    }
+
+    private function normalizeTime(string $time): string
+    {
+        return date('H:i:s', strtotime($time));
     }
 }

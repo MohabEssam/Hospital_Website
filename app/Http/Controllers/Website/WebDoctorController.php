@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Notifications\AppointmentBookedNotification;
+use App\Services\AppointmentConflictService;
 use App\Services\DoctorScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Notification;
 
 class WebDoctorController extends Controller
 {
+    public function __construct(
+        private readonly AppointmentConflictService $conflictService,
+    ) {}
+
     public function index(Request $request): View
     {
         $doctors = Doctor::query()
@@ -72,31 +77,44 @@ class WebDoctorController extends Controller
 
         abort_unless($patient, 403, 'Only patients can book appointments.');
 
-        $appointment = DB::transaction(function () use ($doctor, $patient, $validated): Appointment {
+        [$appointment, $created] = DB::transaction(function () use ($doctor, $patient, $validated): array {
             $startTime = Carbon::createFromFormat('H:i', $validated['start_time']);
+            $endTime = $startTime->copy()->addMinutes(30)->format('H:i');
 
-            return Appointment::create([
+            $duplicate = $this->conflictService->findPatientDuplicate(
+                $patient->getKey(),
+                $doctor->getKey(),
+                $validated['appointment_date'],
+                $startTime->format('H:i'),
+                $endTime,
+            );
+
+            if ($duplicate) {
+                return [$duplicate, false];
+            }
+
+            return [Appointment::create([
                 'patient_id' => $patient->getKey(),
                 'doctor_id' => $doctor->getKey(),
                 'department_id' => $doctor->department_id,
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $startTime->format('H:i'),
-                'end_time' => $startTime->copy()->addMinutes(30)->format('H:i'),
+                'end_time' => $endTime,
                 'status' => Appointment::STATUS_CONFIRMED,
                 'treatment' => $validated['treatment'],
                 'notes' => $validated['notes'] ?? '',
                 'phone_number' => $validated['phone_number'] ?? '',
                 'fee' => $doctor->consultation_fee ?? 0,
-            ]);
+            ]), true];
         });
 
         $appointment->load(['doctor', 'patient.user']);
 
-        if ($appointment->patient?->user) {
+        if ($created && $appointment->patient?->user) {
             $appointment->patient->user->notify(new AppointmentBookedNotification($appointment));
         }
 
-        if ($doctor->email) {
+        if ($created && $doctor->email) {
             Notification::route('mail', $doctor->email)
                 ->notify(new AppointmentBookedNotification($appointment));
         }

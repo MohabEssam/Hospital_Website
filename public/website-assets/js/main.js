@@ -309,6 +309,7 @@
     const bookingTime = document.querySelector('[data-profile-time]');
     const bookingSubmit = document.querySelector('[data-profile-booking-submit]');
     const bookingFeedback = document.querySelector('[data-profile-booking-feedback]');
+    let bookingInProgress = false;
 
     window.setTimeout(() => {
       if (skeleton) skeleton.classList.add('is-hidden');
@@ -346,6 +347,8 @@
       bookingForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
+        if (bookingInProgress) return;
+
         if (!bookingDate.value || !bookingTime.value) {
           if (bookingFeedback) {
             bookingFeedback.className = 'profile-booking-feedback is-error';
@@ -353,6 +356,8 @@
           }
           return;
         }
+
+        bookingInProgress = true;
 
         if (bookingSubmit) {
           bookingSubmit.disabled = true;
@@ -394,6 +399,8 @@
             bookingFeedback.textContent = error.message;
           }
         } finally {
+          bookingInProgress = false;
+
           if (bookingSubmit) {
             bookingSubmit.innerHTML = bookingSubmit.dataset.originalText || bookingSubmit.innerHTML;
             bookingSubmit.disabled = true;

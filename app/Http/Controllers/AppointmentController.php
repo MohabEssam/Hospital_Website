@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\AppointmentConflictService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,10 @@ use Throwable;
 
 class AppointmentController extends Controller
 {
+    public function __construct(
+        private readonly AppointmentConflictService $conflictService,
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -98,9 +103,20 @@ class AppointmentController extends Controller
      */
     public function store(StoreAppointmentRequest $request): RedirectResponse
     {
-        $appointment = Appointment::create(
-            $this->preparePayload($request->validated(), $request->user()),
-        );
+        $payload = $this->preparePayload($request->validated(), $request->user());
+        $appointment = in_array($payload['status'], Appointment::slotBlockingStatuses(), true)
+            ? $this->conflictService->findPatientDuplicate(
+                (int) $payload['patient_id'],
+                (int) $payload['doctor_id'],
+                (string) $payload['appointment_date'],
+                (string) $payload['start_time'],
+                (string) $payload['end_time'],
+            )
+            : null;
+
+        if (! $appointment) {
+            $appointment = Appointment::create($payload);
+        }
 
         return redirect()
             ->route('appointments.show', $appointment)
